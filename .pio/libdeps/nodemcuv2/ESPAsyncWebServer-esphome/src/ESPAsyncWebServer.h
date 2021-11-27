@@ -24,7 +24,8 @@
 #include "Arduino.h"
 
 #include <functional>
-#include "FS.h"
+// #include "FS.h"
+#include "LittleFS.h" // LittleFS is declared
 
 #include "StringArray.h"
 
