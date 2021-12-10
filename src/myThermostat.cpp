@@ -230,11 +230,29 @@ void MyThermostat::setMode( mode_e mode )
 
 // get the readings, which triggers reading the sensors, 
 // but don't bother to return the values
-void MyThermostat::updateMeasurements( )
+void MyThermostat::updateMeasurements( void )
 {
 	bme.takeForcedMeasurement();
 	getTemperature_f();
 	getHumidity_f();
+}
+
+
+// run background logic and timers
+void MyThermostat::runTick( void )
+{
+	// decrement or clear the run once flag, so the fan can be set to run again
+	decrementFanRunTime();
+
+	if( getFanRunTime() == 0 )
+		clearFanRunOnce();
+
+
+	// decrement and 
+	decrementCompressorOffTime();
+
+	if( getCompressorOffTime() == 0 )
+		setSafeToRunCompressor( true );
 }
 
 
@@ -301,12 +319,9 @@ unsigned long MyThermostat::getFanRunTime( void )
 
 void MyThermostat::decrementFanRunTime( void )
 {
-	fanRunTime--;
+	if( fanRunTime )
+		fanRunTime--;
 }
-
-
-// 5 minutse in second
-#define FIVE_MINUTES ( 300 )
 
 
 // turn off the cooler but set the fan to run for a while
@@ -316,6 +331,7 @@ void MyThermostat::turnOffCooler( void )
 	{
 		fanRunOnce = true;
 		setFanRunTime( FIVE_MINUTES );
+		setCompressorOffTime( FIVE_MINUTES );
 	}
 
 	// turn off the compressor
@@ -335,6 +351,9 @@ void MyThermostat::turnOnCooler( void )
 {
 	if( isSafeToRunCompressor() )
 	{
+		// set the flag to prevent short cycling
+		setSafeToRunCompressor( false );
+
 		// set the mode to cooling
 		setMode( MODE_COOLING );
 
@@ -351,6 +370,7 @@ void MyThermostat::turnOffHeater( void )
 	{
 		fanRunOnce = true;
 		setFanRunTime( FIVE_MINUTES );
+		setCompressorOffTime( FIVE_MINUTES );
 	}
 
 	// turn off the compressor
@@ -369,6 +389,9 @@ void MyThermostat::turnOnHeater( void )
 {
 	if( isSafeToRunCompressor() )
 	{
+		// set the flag to prevent short cycling
+		setSafeToRunCompressor( false );
+
 		// set the mode to cooling
 		setMode( MODE_HEATING );
 
@@ -376,6 +399,24 @@ void MyThermostat::turnOnHeater( void )
 		digitalWrite( GPIO_FAN, HIGH );
 		digitalWrite( GPIO_HEATING, HIGH );
 	}
+}
+
+
+void MyThermostat::turnOffAll( void )
+{
+	setMode( MODE_OFF );
+
+	// turn off the fan
+	digitalWrite( GPIO_FAN, LOW );
+
+	// turn off the heating & cooling
+	digitalWrite( GPIO_HEATING, LOW );
+	digitalWrite( GPIO_COOLING, LOW );
+
+	// set the flag to prevent short cycling
+	setSafeToRunCompressor( false );
+	setCompressorOffTime( FIVE_MINUTES );
+
 }
 
 
@@ -391,7 +432,29 @@ bool MyThermostat::isSafeToRunCompressor( void )
 }
 
 
-void MyThermostat::setSafeToRun( bool safe )
+void MyThermostat::setSafeToRunCompressor( bool safe )
 {
 	safeToRunCompressor = safe;
+}
+
+
+void MyThermostat::decrementCompressorOffTime( void )
+{
+	if( compressorOffTime )
+		compressorOffTime--;
+}
+
+
+// returns the remaining fan run time in seconds
+unsigned long MyThermostat::getCompressorOffTime( void )
+{
+	return compressorOffTime * 10;
+}
+
+
+// set the fan run time in seconds (10 seconds minimum)
+// set to 0 to turn off
+void MyThermostat::setCompressorOffTime( unsigned long time )
+{
+	compressorOffTime = time / 10;
 }

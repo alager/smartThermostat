@@ -12,6 +12,9 @@ using namespace std;
 #define GPIO_HEATING	(12)
 #define GPIO_EMGHEAT	(13)
 
+// 5 minutse in second
+#define FIVE_MINUTES ( 300 )
+
 typedef enum
 {
 	MODE_OFF,
@@ -37,11 +40,12 @@ class MyThermostat
 		bool isMode( mode_e mode );
 		void setMode( mode_e mode );
 		void updateMeasurements( void );
+		void runTick( void );
 
 		float getTemperatureSetting( void );
 		void setTemperatureSetting( float );
 
-		void setFanRunTime( unsigned long time );
+		void setFanRunTime( unsigned long );
 		unsigned long getFanRunTime( void );
 		void decrementFanRunTime( void );
 
@@ -52,18 +56,23 @@ class MyThermostat
 		void turnOffHeater( void );
 		void turnOnHeater( void );
 
+		void turnOffAll( void );
+
 		bool isSafeToRunCompressor( void );
-		void setSafeToRun( bool safe );
+		void setSafeToRunCompressor( bool safe );
+		void decrementCompressorOffTime( void );
+		unsigned long getCompressorOffTime( void );
+		void setCompressorOffTime( unsigned long );
 		
 	private:
-		mode_e modeSetting;
-		//mode_e runMode_;
-		unsigned long fanRunTime;
-		float heatingTemperature;
-		float coolingTemperature;
+		mode_e 			modeSetting;
+		unsigned long 	fanRunTime;
+		float 			heatingTemperature;
+		float 			coolingTemperature;
+		unsigned long	compressorOffTime;
 
-		bool fanRunOnce;
-		bool safeToRunCompressor;
+		bool 			fanRunOnce;
+		bool 			safeToRunCompressor;
 
 };
 #endif

@@ -247,6 +247,9 @@ void loop()
 		// update our current readings
 		someTherm->updateMeasurements();
 
+		// run thermostat background logic and timers
+		someTherm->runTick();
+
 		// update websocket data pipe
 		std::string rawStr = to_string(someTherm->getTempRaw());
 		notifyClients( "telemetry:" + someTherm->getTemperature() + "," + someTherm->getHumidity() + "," + rawStr );
@@ -269,15 +272,6 @@ void loop()
 				someTherm->turnOffCooler();
 			}
 
-			// decrement or clear the run once flag, so the fan can be set to run again
-			if( someTherm->getFanRunTime() != 0 )
-			{
-				someTherm->decrementFanRunTime();
-			}
-			else
-			{
-				someTherm->clearFanRunOnce();
-			}
 		}
 		else
 		if( someTherm->isMode( MODE_HEATING ) )
@@ -285,31 +279,22 @@ void loop()
 			if( someTherm->getTemperature_f() < someTherm->getTemperatureSetting() )
 			{
 				// turn on the heater (if we can)
-				someTherm->turnOnCooler();
+				someTherm->turnOnHeater();
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
 			}
 			else
-			if( someTherm->getTemperature_f() <= someTherm->getTemperatureSetting() )
+			if( someTherm->getTemperature_f() >= someTherm->getTemperatureSetting() )
 			{
-				// turn off the cooler, but run fan for a little longer
-				someTherm->turnOffCooler();
-			}
-
-			// decrement or clear the run once flag, so the fan can be set to run again
-			if( someTherm->getFanRunTime() != 0 )
-			{
-				someTherm->decrementFanRunTime();
-			}
-			else
-			{
-				someTherm->clearFanRunOnce();
+				// turn off the heater, but run fan for a little longer
+				someTherm->turnOffHeater();
 			}
 		}
 		else
 		{
 			// off
+			someTherm->turnOffAll();
 		}
 	}
 }
