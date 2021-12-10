@@ -20,6 +20,8 @@ typedef enum
 } mode_e;
 
 
+
+
 class MyThermostat
 {
 	public:
@@ -34,7 +36,6 @@ class MyThermostat
 		string getHumidity();
 		bool isMode( mode_e mode );
 		void setMode( mode_e mode );
-		// void setRunMode( mode_e mode );
 		void updateMeasurements( void );
 
 		float getTemperatureSetting( void );
@@ -46,10 +47,13 @@ class MyThermostat
 
 		void turnOffCooler( void );
 		void turnOnCooler( void );
-		void clearCoolerFanRunOnce( void );
+		void clearFanRunOnce( void );
 
-		bool isSafeToCool( void );
-		void setSafeToCool( bool safe );
+		void turnOffHeater( void );
+		void turnOnHeater( void );
+
+		bool isSafeToRunCompressor( void );
+		void setSafeToRun( bool safe );
 		
 	private:
 		mode_e modeSetting;
@@ -58,8 +62,8 @@ class MyThermostat
 		float heatingTemperature;
 		float coolingTemperature;
 
-		bool coolerFanRunOnce;
-		bool safeToCool;
+		bool fanRunOnce;
+		bool safeToRunCompressor;
 
 };
 #endif

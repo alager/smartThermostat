@@ -250,12 +250,9 @@ void loop()
 		// update websocket data pipe
 		std::string rawStr = to_string(someTherm->getTempRaw());
 		notifyClients( "telemetry:" + someTherm->getTemperature() + "," + someTherm->getHumidity() + "," + rawStr );
-		Serial.print( "raw: " );
-		Serial.println( someTherm->getTempRaw() );
-
-
+		
 		// thermostat logic
-		if( someTherm->isMode( MODE_COOLING ))
+		if( someTherm->isMode( MODE_COOLING ) )
 		{
 			if( someTherm->getTemperature_f() > someTherm->getTemperatureSetting() )
 			{
@@ -263,7 +260,7 @@ void loop()
 				someTherm->turnOnCooler();
 
 				// allow the extended fan run time happen again
-				someTherm->clearCoolerFanRunOnce();
+				someTherm->clearFanRunOnce();
 			}
 			else
 			if( someTherm->getTemperature_f() <= someTherm->getTemperatureSetting() )
@@ -279,8 +276,40 @@ void loop()
 			}
 			else
 			{
-				someTherm->clearCoolerFanRunOnce();
+				someTherm->clearFanRunOnce();
 			}
+		}
+		else
+		if( someTherm->isMode( MODE_HEATING ) )
+		{
+			if( someTherm->getTemperature_f() < someTherm->getTemperatureSetting() )
+			{
+				// turn on the heater (if we can)
+				someTherm->turnOnCooler();
+
+				// allow the extended fan run time happen again
+				someTherm->clearFanRunOnce();
+			}
+			else
+			if( someTherm->getTemperature_f() <= someTherm->getTemperatureSetting() )
+			{
+				// turn off the cooler, but run fan for a little longer
+				someTherm->turnOffCooler();
+			}
+
+			// decrement or clear the run once flag, so the fan can be set to run again
+			if( someTherm->getFanRunTime() != 0 )
+			{
+				someTherm->decrementFanRunTime();
+			}
+			else
+			{
+				someTherm->clearFanRunOnce();
+			}
+		}
+		else
+		{
+			// off
 		}
 	}
 }

@@ -13,6 +13,7 @@ uint8_t BME280_i2caddr = 0x76;
 Adafruit_BME280 bme; // I2C
 
 
+
 // create the initial data structures
 // and connect to the BME280
 MyThermostat::MyThermostat( )
@@ -35,6 +36,8 @@ MyThermostat::~MyThermostat( )
 void MyThermostat::init()
 {
 	// default settings
+	safeToRunCompressor = true;
+
 	unsigned status;
     status = bme.begin( BME280_i2caddr );  
     if (!status) {
@@ -309,43 +312,86 @@ void MyThermostat::decrementFanRunTime( void )
 // turn off the cooler but set the fan to run for a while
 void MyThermostat::turnOffCooler( void )
 {
-	if( !coolerFanRunOnce )
+	if( !fanRunOnce )
 	{
-		coolerFanRunOnce = true;
+		fanRunOnce = true;
 		setFanRunTime( FIVE_MINUTES );
 	}
 
-	// the active state is off
-	// setRunMode( MODE_OFF );
+	// turn off the compressor
+	digitalWrite( GPIO_COOLING, LOW );
+
+
+	// turn off the fan after a delay
+	if( getFanRunTime() == 0 )
+	{
+		digitalWrite( GPIO_FAN, LOW );
+	}
+		
 }
 
 
 void MyThermostat::turnOnCooler( void )
 {
-	if( isSafeToCool() )
+	if( isSafeToRunCompressor() )
 	{
 		// set the mode to cooling
 		setMode( MODE_COOLING );
 
-		// the active state is cooling
-		// setRunMode( MODE_COOLING );
+		// the active state is cooling turn on the fan and compressor
+		digitalWrite( GPIO_FAN, HIGH );
+		digitalWrite( GPIO_COOLING, HIGH );
 	}
 }
 
 
-void MyThermostat::clearCoolerFanRunOnce( void )
+void MyThermostat::turnOffHeater( void )
 {
-	coolerFanRunOnce = false;
+	if( !fanRunOnce )
+	{
+		fanRunOnce = true;
+		setFanRunTime( FIVE_MINUTES );
+	}
+
+	// turn off the compressor
+	digitalWrite( GPIO_HEATING, LOW );
+
+
+	// turn off the fan after a delay
+	if( getFanRunTime() == 0 )
+	{
+		digitalWrite( GPIO_FAN, LOW );
+	}
 }
 
 
-bool MyThermostat::isSafeToCool( void )
+void MyThermostat::turnOnHeater( void )
 {
-	return safeToCool;
+	if( isSafeToRunCompressor() )
+	{
+		// set the mode to cooling
+		setMode( MODE_HEATING );
+
+		// the active state is cooling turn on the fan and compressor
+		digitalWrite( GPIO_FAN, HIGH );
+		digitalWrite( GPIO_HEATING, HIGH );
+	}
 }
 
 
-void MyThermostat::setSafeToCool( bool safe )
+void MyThermostat::clearFanRunOnce( void )
 {
-	safeToCool = safe;
+	fanRunOnce = false;
+}
+
+
+bool MyThermostat::isSafeToRunCompressor( void )
+{
+	return safeToRunCompressor;
+}
+
+
+void MyThermostat::setSafeToRun( bool safe )
+{
+	safeToRunCompressor = safe;
 }
