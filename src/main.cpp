@@ -296,5 +296,10 @@ void loop()
 			// off
 			someTherm->turnOffAll();
 		}
-	}
+
+		// only check to update the eeprom once per loop
+		// the eeprom will only write to the flash if the 
+		// datastructure cache has been changed
+		EEPROM.commit();
+	} // end of 10s loop
 }

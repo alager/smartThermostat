@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <string>
@@ -18,13 +19,18 @@ Adafruit_BME280 bme; // I2C
 // and connect to the BME280
 MyThermostat::MyThermostat( )
 {
-	// default to off 
-	modeSetting = MODE_OFF;
+	// read in the eeprom settings
+	eepromInit();
 }
 
 MyThermostat::MyThermostat( mode_e mode )
 {
-	modeSetting = mode;
+	int addr = 0;
+	// read in the eeprom settings
+	eepromInit();
+
+	eepromData.mode = mode;
+	EEPROM.put( addr, eepromData );
 }
 
 // destructor does nothing right now
@@ -205,7 +211,7 @@ string MyThermostat::getHumidity()
 // check what mode we are in
 bool MyThermostat::isMode( mode_e mode )
 {
-	if( mode == modeSetting )
+	if( mode == eepromData.mode )
 		return true;
 	else
 		return false;
@@ -216,7 +222,9 @@ bool MyThermostat::isMode( mode_e mode )
 // usually based upon a user input
 void MyThermostat::setMode( mode_e mode )
 {
-	modeSetting = mode;
+	int addr = 0;
+	eepromData.mode = mode;
+	EEPROM.put( addr, eepromData );
 }
 
 
@@ -261,12 +269,12 @@ float MyThermostat::getTemperatureSetting( void )
 {
 	if( isMode( MODE_COOLING ) )
 	{
-		return coolingTemperature;
+		return eepromData.coolTemp;
 	}
 	else
 	if( isMode( MODE_HEATING ) )
 	{
-		return heatingTemperature;
+		return eepromData.hotTemp;
 	}
 	else
 	{
@@ -278,27 +286,30 @@ float MyThermostat::getTemperatureSetting( void )
 // set the non-volatile temperature setting for the mode we are in
 void MyThermostat::setTemperatureSetting( float newTemp )
 {
+	int addr = 0;
+	
 	if( isMode( MODE_COOLING ) )
 	{
-		coolingTemperature = newTemp;
+		eepromData.coolTemp = newTemp;
 		Serial.println( "isMode: cooling" );
 	}
 	else
 	if( isMode( MODE_HEATING ) )
 	{
-		heatingTemperature = newTemp;
+		eepromData.hotTemp = newTemp;
 		Serial.println( "isMode: heating" );
 	}
 	else
 	if( isMode( MODE_OFF ) )
 	{
-		heatingTemperature = newTemp;
 		Serial.println( "isMode: off" );
 	}
 	else
 	{
 		Serial.println( "isMode: unknown" );
 	}
+
+	EEPROM.put( addr, eepromData );
 }
 
 
@@ -457,4 +468,63 @@ unsigned long MyThermostat::getCompressorOffTime( void )
 void MyThermostat::setCompressorOffTime( unsigned long time )
 {
 	compressorOffTime = time / 10;
+}
+
+
+// read in the eeprom
+// if the cookie is invalid, then initialize the eeprom
+void MyThermostat::eepromInit( void )
+{
+	// since we use a structure, the address is always 0
+	int addr = 0;
+
+	// initialize the eeprom datastructure
+	// and allocate enough bytes for our structure
+	EEPROM.begin( sizeof( eepromData ) );
+
+	// read the bytes into our structure
+	EEPROM.get( addr, eepromData );
+
+	// check the cookie
+	if( !eepromCookieIsValid() )
+	{
+		// write the initial eeprom values
+		eepromWriteFirstValues();
+	}
+
+	// the put command writes local data back to 
+	// the eeprom cache, but it isn't commited to flash yet 
+	//  EEPROM.put( addr, eepromData );
+
+	// actually write the content of byte-array cache to
+	// hardware flash.  flash write occurs if and only if one or more byte
+	// in byte-array cache has been changed, but if so, ALL sizeof(eepromData) bytes are 
+	// written to flash
+	// EEPROM.commit();  
+}
+
+
+// return true if the cookie is valid
+// otherwise return false
+bool MyThermostat::eepromCookieIsValid( void )
+{
+	if( MAGIC_COOKIE == eepromData.cookie )
+		return true;
+	else
+		return false;
+}
+
+
+// write some sane values to the eeprom
+void MyThermostat::eepromWriteFirstValues( void )
+{
+	int addr = 0;
+	
+	eepromData.cookie =		MAGIC_COOKIE;
+	eepromData.coolTemp =	75.0f;
+	eepromData.hotTemp =	66.5f;
+	eepromData.mode =		MODE_OFF;
+
+	EEPROM.put( addr, eepromData );
+	EEPROM.commit();
 }

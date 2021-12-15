@@ -4,7 +4,10 @@
 
 #include "Arduino.h"
 #include <string>
+#include <EEPROM.h>
 using namespace std;
+
+#define MAGIC_COOKIE	( 0xdebb1e01 )
 
 #define GPIO_FAN 		(2)
 // #define GPIO_COOLING	(16)
@@ -22,6 +25,13 @@ typedef enum
 	MODE_HEATING
 } mode_e;
 
+typedef struct 
+{
+	unsigned long	cookie;			// magic cookie for versioning
+	float			coolTemp;		// the cool temperature setting
+	float			hotTemp;		// the hot temperature setting
+	mode_e			mode;			// the last mode
+} myEEprom_t;
 
 
 
@@ -63,16 +73,20 @@ class MyThermostat
 		void decrementCompressorOffTime( void );
 		unsigned long getCompressorOffTime( void );
 		void setCompressorOffTime( unsigned long );
+
+		void eepromInit( void );
+		bool eepromCookieIsValid( void );
+		void eepromWriteFirstValues( void );
 		
 	private:
 		mode_e 			modeSetting;
 		unsigned long 	fanRunTime;
-		float 			heatingTemperature;
-		float 			coolingTemperature;
 		unsigned long	compressorOffTime;
 
 		bool 			fanRunOnce;
 		bool 			safeToRunCompressor;
+
+		myEEprom_t		eepromData;
 
 };
 #endif
