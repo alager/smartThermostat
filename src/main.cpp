@@ -52,6 +52,9 @@ void notifyClients( std::string data )
 	ws.textAll( (char *)data.c_str() );
 }
 
+
+// a message from the websocket has arrived
+// so process it.
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
 	Serial.println( "Got Data from WebSocket");
@@ -251,8 +254,14 @@ void loop()
 		someTherm->runTick();
 
 		// update websocket data pipe
-		std::string rawStr = to_string(someTherm->getTempRaw());
-		notifyClients( "telemetry:" + someTherm->getTemperature() + "," + someTherm->getHumidity() + "," + rawStr );
+		std::string telemetry;
+		telemetry = "telemetry:";
+		telemetry += to_string( someTherm->getMode() ) + ",";
+		telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
+		telemetry += someTherm->getTemperature() + ",";
+		telemetry += someTherm->getHumidity() + ",";
+		telemetry += someTherm->getPressure();
+		notifyClients( telemetry );
 		
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )

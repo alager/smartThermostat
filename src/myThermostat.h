@@ -47,8 +47,12 @@ class MyThermostat
 		string getTemperature();
 		float getHumidity_f();
 		string getHumidity();
+		float getPressure_f();
+		string getPressure();
+
 		bool isMode( mode_e mode );
 		void setMode( mode_e mode );
+		mode_e getMode( void );
 		void updateMeasurements( void );
 		void runTick( void );
 

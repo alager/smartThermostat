@@ -127,8 +127,8 @@ float MyThermostat::getTemperature_f()
 
 	// convert to Fahrenheit
 	temperature = 1.8f * temperature + 32.0f;
-	Serial.print("TempRdn:	");
-	Serial.println( temperature );
+	// Serial.print("TempRdn:	");
+	// Serial.println( temperature );
 
 	// check for invalid value and put in -1 so 
 	// the user can see something is wrong
@@ -149,7 +149,7 @@ float MyThermostat::getTemperature_f()
 	outputTemp += ( temperature - outputTemp ) / a;
 	
 	Serial.print("TempAvg:	");
-	Serial.println(outputTemp);
+	Serial.println( outputTemp );
 	return outputTemp;
 }
 
@@ -158,6 +158,27 @@ float MyThermostat::getTemperature_f()
 std::string MyThermostat::getTemperature()
 {
 	return to_string( getTemperature_f() );
+}
+
+
+// Returns the pressure from the sensor (in Pascal)
+float MyThermostat::getPressure_f()
+{
+	float pressure;
+
+	// read the temperature sensor and convert to in-Hg
+	pressure = bme.readPressure() / 3386.3886666667f;
+
+	Serial.print("Pressure:	");
+	Serial.println( pressure );
+	return pressure;
+}
+
+
+// return a string of the pressure
+std::string MyThermostat::getPressure()
+{
+	return to_string( getPressure_f() );
 }
 
 
@@ -197,6 +218,7 @@ float MyThermostat::getHumidity_f()
 	}
 	humidity /= 4.0f;
 
+	Serial.print( "Humidity: ");
 	Serial.println( humidity );
 	return humidity;
 }
@@ -228,12 +250,11 @@ void MyThermostat::setMode( mode_e mode )
 }
 
 
-// set the active running mode
-// based upon temperature
-// void MyThermostat::setRunMode( mode_e mode )
-// {
-// 	runMode_ = mode;
-// }
+// return the mode
+mode_e MyThermostat::getMode( void )
+{
+	return eepromData.mode;
+}
 
 
 // get the readings, which triggers reading the sensors, 

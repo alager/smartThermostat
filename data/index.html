@@ -72,12 +72,27 @@ function onMessage(event)
 	if( dataType == "telemetry" )
 	{
 		// split the string by "," into an array
-		const dataArry = rawData.split( "," );
-		const tempAvg = dataArry[ 0 ];
-		const humidAvg = dataArry[ 1 ];
-		const presAvg = dataArry[ 2 ];
+		const dataArry =	rawData.split( "," );
+		const mode =		dataArry[ 0 ];
+		const tempSetting =	dataArry[ 1 ];
+		const tempAvg =		dataArry[ 2 ];
+		const humidAvg =	dataArry[ 3 ];
+		const presAvg =		dataArry[ 4 ];
 
 		document.getElementById('temperature').innerHTML = parseFloat( tempAvg ).toFixed( 2 );
+		document.getElementById('tempSet').innerHTML = parseFloat( tempSetting ).toFixed( 1 );
+
+		var modeStr;
+		if( mode == 0 )
+			modeStr = "Off";
+		else
+		if( mode == 1 )
+			modeStr = "Cooling";
+		else
+		if( mode == 2 )
+			modeStr = "Heating";
+
+		document.getElementById('mode').innerHTML = modeStr;
 		
 		// draw an XY line chart
 		data = thermLineChart( tempAvg, humidAvg, presAvg );
@@ -119,7 +134,6 @@ function addGraph()
 
 
 	//Update the chart when window resizes.
-	//nv.utils.windowResize(function () { chart.update() });
 	nv.utils.windowResize(chart.update);
 	return chart;
 };
@@ -134,8 +148,6 @@ function thermLineChart( temperature, humidity, pressure )
 	// push an {xy} object onto the array
 	temp.push( {x: chartIdx, y: temperature} );
 	hum.push( {x: chartIdx, y: humidity} );
-
-	// overide pressure for now with raw temperature
 	pres.push({ x: chartIdx, y: pressure});
 
 	chartIdx++;
@@ -162,7 +174,7 @@ function thermLineChart( temperature, humidity, pressure )
 		},
 		{
 			values: pres,
-			key: "RawTemp",
+			key: "Pressure",
 			color: "#f02010"
 		}
 	];
@@ -207,6 +219,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 	</div>
 	Temperature: <span id="temperature">00.00</span>&deg;F<br>
 	TempSet: <span id="tempSet">00.00</span>&deg;F
+	Mode: <span id="mode"></span>
 	<div class='with-3d-shadow with-transitions' >
 		<div id="chart"></div>
 	</div>
