@@ -81,9 +81,10 @@ class MyThermostat
 		void eepromInit( void );
 		bool eepromCookieIsValid( void );
 		void eepromWriteFirstValues( void );
+		void saveSettings( void );
 		
 	private:
-		mode_e 			modeSetting;
+		// mode_e 			modeSetting;
 		unsigned long 	fanRunTime;
 		unsigned long	compressorOffTime;
 

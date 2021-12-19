@@ -127,8 +127,6 @@ float MyThermostat::getTemperature_f()
 
 	// convert to Fahrenheit
 	temperature = 1.8f * temperature + 32.0f;
-	// Serial.print("TempRdn:	");
-	// Serial.println( temperature );
 
 	// check for invalid value and put in -1 so 
 	// the user can see something is wrong
@@ -189,7 +187,6 @@ float MyThermostat::getHumidity_f()
 	static unsigned char idx = 0;
 	float humidity;
 
-	//humidity = 25.1f;
 	humidity = bme.readHumidity();
 
 	// check for invalid value and put in -1 so 
@@ -218,7 +215,7 @@ float MyThermostat::getHumidity_f()
 	}
 	humidity /= 4.0f;
 
-	Serial.print( "Humidity: ");
+	Serial.print( "Humidity:	");
 	Serial.println( humidity );
 	return humidity;
 }
@@ -547,5 +544,13 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.mode =		MODE_OFF;
 
 	EEPROM.put( addr, eepromData );
+	EEPROM.commit();
+}
+
+
+// update the eeprom values to make any changes permanent
+// Note: it only wirtes the flash if it has been changed.
+void MyThermostat::saveSettings( void )
+{
 	EEPROM.commit();
 }

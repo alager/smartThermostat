@@ -100,6 +100,22 @@ function onMessage(event)
 			.datum(data)         //Populate the <svg> element with chart data...
 			.call(chart);          //Finally, render the chart!
 	}
+	else
+	if( dataType == "modeSet" )
+	{
+		const mode = rawData;
+		var modeStr;
+		if( mode == 0 )
+			modeStr = "Off";
+		else
+		if( mode == 1 )
+			modeStr = "Cooling";
+		else
+		if( mode == 2 )
+			modeStr = "Heating";
+
+		document.getElementById('mode').innerHTML = modeStr;
+	}
 }
 
 
@@ -185,7 +201,7 @@ function initButtons()
 {
 	document.getElementById('clickUp').addEventListener('click', clickUp);
 	document.getElementById('clickDown').addEventListener('click', clickDown);
-
+	document.getElementById('clickMode').addEventListener('click', clickMode);
 }
 
 function clickUp()
@@ -197,6 +213,11 @@ function clickUp()
 function clickDown()
 {
 	websocket.send( "temperatureDown" );
+}
+
+function clickMode()
+{
+	websocket.send( "modeClick" );
 }
 
 document.addEventListener("DOMContentLoaded", function(event) 
@@ -216,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function(event)
     <h1>Lager Stat</h1>
 	<div>
 		<button id="clickUp">Up</button> <button id="clickDown">Down</button>
+		<button id="clickMode">Mode</button>
 	</div>
 	Temperature: <span id="temperature">00.00</span>&deg;F<br>
 	TempSet: <span id="tempSet">00.00</span>&deg;F

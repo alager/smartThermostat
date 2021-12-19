@@ -57,6 +57,8 @@ void notifyClients( std::string data )
 // so process it.
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
+	std::string replyStr;
+
 	Serial.println( "Got Data from WebSocket");
 	data[len] = 0;
 	Serial.println( (char *)data );
@@ -64,9 +66,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 	AwsFrameInfo *info = (AwsFrameInfo *)arg;
 	if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
 	{
-		Serial.print( "isMode: " );
-		Serial.println( someTherm->isMode( MODE_COOLING ) );
-
 		data[len] = 0;
 		if (strcmp((char *)data, "temperatureUp") == 0)
 		{
@@ -84,9 +83,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			Serial.print( "UP theTemp: " );
 			Serial.println( theTemp );
 
-			std::string strTemp = to_string( theTemp );
+			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
-			notifyClients( "tempSet:" + strTemp );
+			notifyClients( "tempSet:" + replyStr );
 		}
 		else
 		if (strcmp((char *)data, "temperatureDown") == 0)
@@ -95,12 +94,29 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			theTemp -= 0.5f;
 			someTherm->setTemperatureSetting( theTemp );
 
-			Serial.print( "DOWN theTemp: " );
-			Serial.println( theTemp );
+			// Serial.print( "DOWN theTemp: " );
+			// Serial.println( theTemp );
 
-			std::string strTemp = to_string( theTemp );
+			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
-			notifyClients( "tempSet:" + strTemp );
+			notifyClients( "tempSet:" + replyStr );
+		}
+		else
+		if (strcmp((char *)data, "modeClick") == 0)
+		{
+			mode_e mode = someTherm->getMode();
+
+			// cycle through the modes of operation
+			if( mode == MODE_HEATING )
+				mode = MODE_OFF;
+			else
+				mode = (mode_e)(mode + 1);
+
+			someTherm->setMode( mode );
+
+			// send the new temperature setting to the websocket clients
+			replyStr = to_string( mode );
+			notifyClients( "modeSet:" + replyStr );
 		}
 	}
 }
@@ -156,13 +172,9 @@ void setup()
 	someTherm = &someThermObj;
 	someTherm->init();
 
-	Serial.print( "isMode: " );
-	Serial.println( someTherm->isMode( MODE_COOLING ) );
-
 	// debug, set the mode to cooling
-	someTherm->setMode( MODE_COOLING );
 	Serial.print( "isMode: " );
-	Serial.println( someTherm->isMode( MODE_COOLING ) );
+	Serial.println( someTherm->getMode() );
 
 	
 	// Initialize SPIFFS
@@ -228,19 +240,12 @@ void setup()
 
 	initWebSocket();
 
-	// debug, set the mode to cooling
-	someTherm->setMode( MODE_COOLING );
-
 	// Start server
 	server.begin();
 }
  
 void loop()
-{
-	// debug, set the mode to cooling
-	someTherm->setMode( MODE_COOLING );
-
-	
+{	
 	unsigned long currentMillis = millis();
 	if (currentMillis - previousMillis >= interval)
 	{
@@ -309,6 +314,8 @@ void loop()
 		// only check to update the eeprom once per loop
 		// the eeprom will only write to the flash if the 
 		// datastructure cache has been changed
-		EEPROM.commit();
+		someTherm->saveSettings();
+		// EEPROM.commit();
 	} // end of 10s loop
 }
+// 
