@@ -1,0 +1,32 @@
+
+/* define our Mario element sprites */
+.sprite {
+    background: url("Mario_3_sprites.jpg") no-repeat;
+}
+
+.marioStanding {
+	width: 46px; /* Icon width */
+    height: 50px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	zoom: 150%;
+	background-position: -196px -177px; /* Icon background position in sprite */
+}
+
+.marioJumping {
+	width: 51px; /* Icon width */
+    height: 82px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	zoom: 100%;
+	background-position: -265px -149px; /* Icon background position in sprite */
+}
+
+.container {
+	position: relative;
+}
+
+.topright {
+	position: absolute;
+	top: 8px;
+	right: 16px;
+	font-size: 18px;
+}

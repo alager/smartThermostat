@@ -147,7 +147,8 @@ void initWebSocket()
 	server.addHandler(&ws);
 }
 
-// Replaces placeholder with DHT values
+// callback that is used to replace strings in HTML files
+// with variable values
 String processor(const String& var)
 {
 	Serial.println(var);
@@ -212,31 +213,36 @@ void setup()
 	});
 
 	// Route to load style.css file
-	server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
+	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send(LittleFS, "/style.css", "text/css");
+		request->send(LittleFS, "/mario.css", "text/css");
+	});
+
+	server.on("/Mario_3_sprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/Mario_3_sprites.jpg", "image/jpeg");
 	});
 
 	// routes to send peices of data
 	// server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
 	//   request->send_P(200, "text/plain", String(t).c_str());
 	// });
-	server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		// request->send_P(200, "text/plain", therm.getTemperature().c_str());
-		request->send_P(200, "text/plain", String(h).c_str());
-	});
-	server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send_P(200, "text/plain", String(h).c_str());
-	});
+	// server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request)
+	// {
+	// 	// request->send_P(200, "text/plain", therm.getTemperature().c_str());
+	// 	request->send_P(200, "text/plain", String(h).c_str());
+	// });
+	// server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request)
+	// {
+	// 	request->send_P(200, "text/plain", String(h).c_str());
+	// });
 
 	// Route to set GPIO to HIGH
-	server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		// digitalWrite(ledPin, HIGH);    
-		request->send(LittleFS, "/index.html", String(), false, processor);
-	});
+	// server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
+	// {
+	// 	// digitalWrite(ledPin, HIGH);    
+	// 	request->send(LittleFS, "/index.html", String(), false, processor);
+	// });
 
 	initWebSocket();
 
