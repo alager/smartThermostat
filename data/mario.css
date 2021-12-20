@@ -8,7 +8,7 @@
 	width: 46px; /* Icon width */
     height: 50px; /* Icon height */
 	display: inline-block; /* Display icon as inline block */
-	zoom: 150%;
+	zoom: 120%;
 	background-position: -196px -177px; /* Icon background position in sprite */
 }
 
@@ -24,9 +24,14 @@
 	position: relative;
 }
 
-.topright {
+.middleRight {
 	position: absolute;
-	top: 8px;
-	right: 16px;
-	font-size: 18px;
+	top: 100px;
+	right: -15px;
+}
+
+.middleRightJumping {
+	position: absolute;
+	top: 85px;
+	right: -15px;
 }
