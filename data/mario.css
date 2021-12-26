@@ -11,7 +11,7 @@
 	display: inline-block; /* Display icon as inline block */
 	zoom: 120%;
 	background-position: -196px -177px; /* Icon background position in sprite */
-	display: none;
+	/* display: none; */
 }
 
 /* select the Mario Jumping Sprite */
@@ -29,22 +29,22 @@
 /* Positions for Mario */
 .middleRight {
 	position: absolute;
-	top: 100px;
+	top: 115px;
 	right: -15px;
 }
 
 /* Positions for Mario */
 .middleRightJumping {
 	position: absolute;
-	top: 100px;
+	top: 115px;
 	right: -15px;
 }
 
 
 @keyframes MarioJump {
-	0%   { right:-15px; top:100px;}
+	0%   { right:-15px; top:115px;}
 	50%  { right:-15px; top:63px;}
-	100% { right:-15px; top:100px;}
+	100% { right:-15px; top:115px;}
 }
 
 
@@ -63,6 +63,21 @@
 	right: -15px;
 }
 
+
+/* select the block sprite */
+.pipeSprite {
+	width: 100px; /* Icon width */
+    height: 100px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	background-position: -24px -393px; /* Icon background position in sprite */
+}
+
+
+.pipePosition{
+	position: absolute;
+	top: 250px;
+	right: -43px;
+}
 
 .container {
 	position: relative;
