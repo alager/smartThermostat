@@ -1,4 +1,9 @@
 
+:root {
+	--marioX: -15px;	/*use with right*/
+	--marioY: 130px;	/*use with top*/
+}
+
 /* define our Mario element sprites */
 .sprite {
     background: url("Mario_3_sprites.jpg") no-repeat;
@@ -17,10 +22,10 @@
 /* select the Mario Jumping Sprite */
 .marioJumping {
 	width: 51px; /* Icon width */
-    height: 82px; /* Icon height */
+    height: 78px; /* Icon height */
 	display: inline-block; /* Display icon as inline block */
 	zoom: 100%;
-	background-position: -265px -149px; /* Icon background position in sprite */
+	background-position: -265px -153px; /* Icon background position in sprite */
 	
 }
 
@@ -31,9 +36,9 @@
 }
 
 @keyframes MarioJump {
-	0%   { right:-15px; top:115px;}
-	50%  { right:-15px; top:63px;}
-	100% { right:-15px; top:115px;}
+	0%   { right:var(--marioX); top:var(--marioY);}
+	50%  { right:var(--marioX); top:63px;}
+	100% { right:var(--marioX); top:var(--marioY);}
 }
 
 
@@ -44,23 +49,23 @@
 }
 
 @keyframes MarioFall {
-	0%   { right:-15px; top:115px;}
-	50%  { right:-15px; top:63px;}
-	100% { right:-15px; top:115px;}
+	0%   { right:var(--marioX); top:var(--marioY);}
+	50%  { right:var(--marioX); top:263px;}
+	100% { right:var(--marioX); top:var(--marioY);}
 }
 
 /* Positions for Mario */
 .middleRight {
 	position: absolute;
-	top: 115px;
-	right: -15px;
+	top: var(--marioY);
+	right: var(--marioX);
 }
 
 /* Positions for Mario */
 .middleRightJumping {
 	position: absolute;
-	top: 115px;
-	right: -15px;
+	top: var(--marioY);
+	right: var(--marioX);
 }
 
 
@@ -103,3 +108,37 @@
 }
 
 
+
+/* Fonts */
+@font-face {
+    font-family: "marioFont";
+	src: url("marioFont.woff"), url("marioFont.woff") format('woff');
+}
+
+.marioDiv {
+    font-family: marioFont
+}
+
+.temperatureDisplay {
+	font-size: 300px;
+	position: absolute;
+	top: -60px;
+	left: 90px;
+	-webkit-text-stroke: 1px black;
+}
+
+.temperatureSetting {
+	font-size: 90px;
+	position: absolute;
+	top: 240px;
+	left: 200px;
+	-webkit-text-stroke: 1px black;
+}
+
+.heating {
+	color:red;
+}
+
+.cooling {
+	color:blue;
+}

@@ -205,6 +205,8 @@ function initButtons()
 	document.getElementById('clickUp').addEventListener('click', clickUp);
 	document.getElementById('topBlock').addEventListener('click', clickUp);
 	document.getElementById('clickDown').addEventListener('click', clickDown);
+	document.getElementById('pipe').addEventListener('click', clickDown);
+
 	document.getElementById('clickMode').addEventListener('click', clickMode);
 
 	// populate an element that we animate 
@@ -225,8 +227,8 @@ function clickUp()
 {
 
 	// websocket.send( "temperatureUp" );
+
 	// marioJumping
-	const mario = document.getElementById('mario');
 	mario.classList.add("marioMoveUp");
 	
 }
@@ -234,7 +236,10 @@ function clickUp()
 
 function clickDown()
 {
-	websocket.send( "temperatureDown" );
+	// websocket.send( "temperatureDown" );
+
+	// marioJumping
+	mario.classList.add("marioMoveDown");
 }
 
 function clickMode()
@@ -258,13 +263,15 @@ document.addEventListener("DOMContentLoaded", function(event)
 	<body>
 		<div>
 			<!--Mario interface-->
-			<div class="container">
+			<div class="container marioDiv">
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
 				<!-- <div class="sprite marioStanding middleRight"></div> -->
 				<div id="mario" class="sprite marioJumping middleRightJumping"></div>
-				<div class="sprite pipeSprite pipePosition"></div>
-
+				<div id="pipe" class="sprite pipeSprite pipePosition"></div>
+				<div class="temperatureDisplay cooling">65</div>
+				<div class="temperatureSetting cooling">60</div>
 			</div>
+
 			<button id="clickUp">Up</button>
 			<button id="clickDown">Down</button>
 		</div>
