@@ -21,9 +21,32 @@
 	display: inline-block; /* Display icon as inline block */
 	zoom: 100%;
 	background-position: -265px -149px; /* Icon background position in sprite */
+	
+}
+
+.marioMoveUp {
 	animation-name: MarioJump;
 	animation-duration: 1s;
 	animation-iteration-count: 1;
+}
+
+@keyframes MarioJump {
+	0%   { right:-15px; top:115px;}
+	50%  { right:-15px; top:63px;}
+	100% { right:-15px; top:115px;}
+}
+
+
+.marioMoveDown {
+	animation-name: MarioFall;
+	animation-duration: 1s;
+	animation-iteration-count: 1;
+}
+
+@keyframes MarioFall {
+	0%   { right:-15px; top:115px;}
+	50%  { right:-15px; top:63px;}
+	100% { right:-15px; top:115px;}
 }
 
 /* Positions for Mario */
@@ -41,11 +64,7 @@
 }
 
 
-@keyframes MarioJump {
-	0%   { right:-15px; top:115px;}
-	50%  { right:-15px; top:63px;}
-	100% { right:-15px; top:115px;}
-}
+
 
 
 /* select the block sprite */

@@ -26,6 +26,8 @@ var chart;
 var data;
 const chartHeight = 500;
 
+var mario;
+
 function initWebSocket() {
 	console.log('Trying to open a WebSocket connection...');
 	websocket = new WebSocket(gateway);
@@ -201,13 +203,32 @@ function thermLineChart( temperature, humidity, pressure )
 function initButtons()
 {
 	document.getElementById('clickUp').addEventListener('click', clickUp);
+	document.getElementById('topBlock').addEventListener('click', clickUp);
 	document.getElementById('clickDown').addEventListener('click', clickDown);
 	document.getElementById('clickMode').addEventListener('click', clickMode);
+
+	// populate an element that we animate 
+	mario = document.getElementById('mario');
+
+	// event listener for mario animation end
+	mario.addEventListener('animationend', () => 
+	{ 
+		if( mario.classList.contains( "marioMoveUp" ) )
+			mario.classList.remove( "marioMoveUp" );
+		else
+		if( mario.classList.contains( "marioMoveDown" ) )
+			mario.classList.remove( "marioMoveDown" );
+	});
 }
 
 function clickUp()
 {
-	websocket.send( "temperatureUp" );
+
+	// websocket.send( "temperatureUp" );
+	// marioJumping
+	const mario = document.getElementById('mario');
+	mario.classList.add("marioMoveUp");
+	
 }
 
 
@@ -238,9 +259,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 		<div>
 			<!--Mario interface-->
 			<div class="container">
-				<div class="sprite blockSprite blockPosition"></div>
-				<div class="sprite marioStanding middleRight"></div>
-				<div class="sprite marioJumping middleRightJumping"></div>
+				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
+				<!-- <div class="sprite marioStanding middleRight"></div> -->
+				<div id="mario" class="sprite marioJumping middleRightJumping"></div>
 				<div class="sprite pipeSprite pipePosition"></div>
 
 			</div>
