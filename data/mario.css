@@ -50,7 +50,7 @@
 
 @keyframes MarioFall {
 	0%   { right:var(--marioX); top:var(--marioY);}
-	50%  { right:var(--marioX); top:263px;}
+	50%  { right:var(--marioX); top:233px;}
 	100% { right:var(--marioX); top:var(--marioY);}
 }
 
@@ -67,10 +67,6 @@
 	top: var(--marioY);
 	right: var(--marioX);
 }
-
-
-
-
 
 /* select the block sprite */
 .blockSprite {
@@ -122,7 +118,7 @@
 .temperatureDisplay {
 	font-size: 300px;
 	position: absolute;
-	top: -60px;
+	top: -70px;
 	left: 90px;
 	-webkit-text-stroke: 1px black;
 }
@@ -130,7 +126,7 @@
 .temperatureSetting {
 	font-size: 90px;
 	position: absolute;
-	top: 240px;
+	top: 250px;
 	left: 200px;
 	-webkit-text-stroke: 1px black;
 }

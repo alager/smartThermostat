@@ -218,9 +218,16 @@ void setup()
 		request->send(LittleFS, "/mario.css", "text/css");
 	});
 
+	// sen the sprites
 	server.on("/Mario_3_sprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
 		request->send(LittleFS, "/Mario_3_sprites.jpg", "image/jpeg");
+	});
+
+	// send the fonts
+	server.on("/marioFont.woff", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/marioFont.woff", "font/woff");
 	});
 
 	// routes to send peices of data

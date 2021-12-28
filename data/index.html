@@ -216,7 +216,11 @@ function initButtons()
 	mario.addEventListener('animationend', () => 
 	{ 
 		if( mario.classList.contains( "marioMoveUp" ) )
+		{
 			mario.classList.remove( "marioMoveUp" );
+			mario.classList.add( "marioStanding" );
+			mario.classList.remove( "marioJumping" );
+		}
 		else
 		if( mario.classList.contains( "marioMoveDown" ) )
 			mario.classList.remove( "marioMoveDown" );
@@ -229,6 +233,8 @@ function clickUp()
 	// websocket.send( "temperatureUp" );
 
 	// marioJumping
+	mario.classList.remove( "marioStanding" );
+	mario.classList.add( "marioJumping" );
 	mario.classList.add("marioMoveUp");
 	
 }
@@ -265,11 +271,11 @@ document.addEventListener("DOMContentLoaded", function(event)
 			<!--Mario interface-->
 			<div class="container marioDiv">
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
-				<!-- <div class="sprite marioStanding middleRight"></div> -->
-				<div id="mario" class="sprite marioJumping middleRightJumping"></div>
+				<div id="mario" class="sprite marioStanding middleRight"></div>
+				<!-- <div id="mario" class="sprite marioJumping middleRightJumping"></div> -->
 				<div id="pipe" class="sprite pipeSprite pipePosition"></div>
-				<div class="temperatureDisplay cooling">65</div>
-				<div class="temperatureSetting cooling">60</div>
+				<div id="temperature" class="temperatureDisplay cooling">65</div>
+				<div id="tempSet" class="temperatureSetting cooling">60</div>
 			</div>
 
 			<button id="clickUp">Up</button>
