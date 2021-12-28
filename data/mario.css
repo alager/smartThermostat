@@ -31,7 +31,7 @@
 
 .marioMoveUp {
 	animation-name: MarioJump;
-	animation-duration: 1s;
+	animation-duration: 500ms;
 	animation-iteration-count: 1;
 }
 
@@ -44,7 +44,7 @@
 
 .marioMoveDown {
 	animation-name: MarioFall;
-	animation-duration: 1s;
+	animation-duration: 500ms;
 	animation-iteration-count: 1;
 }
 
@@ -116,10 +116,10 @@
 }
 
 .temperatureDisplay {
-	font-size: 300px;
+	font-size: 260px;
 	position: absolute;
-	top: -70px;
-	left: 90px;
+	top: -40px;
+	left: 40px;
 	-webkit-text-stroke: 1px black;
 }
 
@@ -137,4 +137,25 @@
 
 .cooling {
 	color:blue;
+}
+
+.off {
+	color:slategrey;
+}
+
+/* style the mode text */
+#mode {
+	position: absolute;
+	font-size: 50px;
+	left: 140px;
+	top: 5px;
+}
+
+/* style the mode button */
+#clickMode {
+	position: absolute;
+	font-size: 20px;
+	left: -22px;
+	top: 25px;
+	border-radius: 4px;
 }

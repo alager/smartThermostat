@@ -26,7 +26,10 @@ var chart;
 var data;
 const chartHeight = 500;
 
+// variables for elements
 var mario;
+var modeSetting;
+var tempSet;
 
 function initWebSocket() {
 	console.log('Trying to open a WebSocket connection...');
@@ -47,11 +50,6 @@ function onClose(event) {
 
 function onMessage(event) 
 {
-	//debug
-	// console.log( "DEBUG")
-	// console.log( event.data );
-	// console.log( "end DEBUG")
-
 	var data = event.data;
 
 	if( typeof( data ) != "string" )
@@ -82,42 +80,65 @@ function onMessage(event)
 		const humidAvg =	dataArry[ 3 ];
 		const presAvg =		dataArry[ 4 ];
 
-		document.getElementById('temperature').innerHTML = parseFloat( tempAvg ).toFixed( 2 );
+		document.getElementById('temperature').innerHTML = parseFloat( tempAvg ).toFixed( 1 );
 		document.getElementById('tempSet').innerHTML = parseFloat( tempSetting ).toFixed( 1 );
 
 		var modeStr;
 		if( mode == 0 )
+		{
 			modeStr = "Off";
+			modeColor = "off";
+		}
 		else
 		if( mode == 1 )
+		{
 			modeStr = "Cooling";
+			modeColor = "cooling";
+		}
 		else
 		if( mode == 2 )
+		{
 			modeStr = "Heating";
+			modeColor = "heating";
+		}
 
-		document.getElementById('mode').innerHTML = modeStr;
+		modeSetting.innerHTML = modeStr;
+		tempSet.classList.remove( "off", "cooling", "heating" );
+		tempSet.classList.add( modeColor );
 		
 		// draw an XY line chart
-		data = thermLineChart( tempAvg, humidAvg, presAvg );
-		d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.   
-			.datum(data)         //Populate the <svg> element with chart data...
-			.call(chart);          //Finally, render the chart!
+		// data = thermLineChart( tempAvg, humidAvg, presAvg );
+		// d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.   
+		// 	.datum(data)         //Populate the <svg> element with chart data...
+		// 	.call(chart);          //Finally, render the chart!
 	}
 	else
 	if( dataType == "modeSet" )
 	{
 		const mode = rawData;
 		var modeStr;
+		var modeColor;
 		if( mode == 0 )
+		{
 			modeStr = "Off";
+			modeColor = "off";
+		}
 		else
 		if( mode == 1 )
+		{
 			modeStr = "Cooling";
+			modeColor = "cooling";
+		}
 		else
 		if( mode == 2 )
+		{
 			modeStr = "Heating";
+			modeColor = "heating";
+		}
 
-		document.getElementById('mode').innerHTML = modeStr;
+		modeSetting.innerHTML = modeStr;
+		tempSet.classList.remove( "off", "cooling", "heating" );
+		tempSet.classList.add( modeColor );
 	}
 }
 
@@ -159,7 +180,6 @@ function addGraph()
 
 
 // make a line chart of the temperature data
-// TODO: add humidity and pressure too
 var temp=[], hum=[], pres=[];
 var chartIdx=0;
 function thermLineChart( temperature, humidity, pressure )
@@ -209,6 +229,9 @@ function initButtons()
 
 	document.getElementById('clickMode').addEventListener('click', clickMode);
 
+	modeSetting = document.getElementById('mode');
+	tempSet = document.getElementById('tempSet');
+
 	// populate an element that we animate 
 	mario = document.getElementById('mario');
 
@@ -227,10 +250,11 @@ function initButtons()
 	});
 }
 
+// clicked the up button
 function clickUp()
 {
 
-	// websocket.send( "temperatureUp" );
+	websocket.send( "temperatureUp" );
 
 	// marioJumping
 	mario.classList.remove( "marioStanding" );
@@ -239,15 +263,16 @@ function clickUp()
 	
 }
 
-
+// clicked the down button
 function clickDown()
 {
-	// websocket.send( "temperatureDown" );
+	websocket.send( "temperatureDown" );
 
 	// marioJumping
 	mario.classList.add("marioMoveDown");
 }
 
+// clicked the mode button
 function clickMode()
 {
 	websocket.send( "modeClick" );
@@ -270,16 +295,16 @@ document.addEventListener("DOMContentLoaded", function(event)
 		<div>
 			<!--Mario interface-->
 			<div class="container marioDiv">
+				<button id="clickMode">Mode</button> <span id="mode">Heating</span>
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
 				<div id="mario" class="sprite marioStanding middleRight"></div>
-				<!-- <div id="mario" class="sprite marioJumping middleRightJumping"></div> -->
 				<div id="pipe" class="sprite pipeSprite pipePosition"></div>
-				<div id="temperature" class="temperatureDisplay cooling">65</div>
-				<div id="tempSet" class="temperatureSetting cooling">60</div>
+				<div id="temperature" class="temperatureDisplay cooling">65.7</div>
+				<div id="tempSet" class="temperatureSetting cooling">80.7</div>
 			</div>
 
-			<button id="clickUp">Up</button>
-			<button id="clickDown">Down</button>
+			<!-- <button id="clickUp">Up</button>
+			<button id="clickDown">Down</button> -->
 		</div>
 		<!--This is the controls deleopment div below-->
 		<div hidden>
