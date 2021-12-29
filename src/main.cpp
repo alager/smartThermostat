@@ -254,6 +254,7 @@ void setup()
 
 	// Start ElegantOTA
 	AsyncElegantOTA.begin(&server);
+	// AsyncElegantOTA.begin(&server, "username", "password");
 	
 	// Start server
 	server.begin();
