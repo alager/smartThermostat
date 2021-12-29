@@ -445,18 +445,6 @@ void MyThermostat::turnOnHeater( void )
 mode_e MyThermostat::currentState( void )
 {
 	return currentMode;
-	
-	// if( digitalReadOutputPin( GPIO_HEATING ) == HIGH )
-	// {
-	// 	return MODE_HEATING;
-	// }
-	// else
-	// if( digitalReadOutputPin( GPIO_COOLING ) == HIGH )
-	// {
-	// 	return MODE_COOLING;
-	// }
-	// else
-	// 	return MODE_OFF;
 }
 
 void MyThermostat::turnOffAll( void )

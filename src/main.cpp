@@ -13,6 +13,7 @@
 #include <LittleFS.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <AsyncElegantOTA.h>
 
 #include "myThermostat.h"
 
@@ -20,7 +21,7 @@
 MyThermostat *someTherm;
 MyThermostat someThermObj;
 
-// Replace with your network credentials
+// network credentials
 const char* ssid = "NestRouter1";
 const char* password = "This_isapassword9";
 
@@ -46,7 +47,8 @@ const unsigned long interval = 10000;
 
 /////////////////////////////
 // code start
-bool ledState = 0;
+// bool ledState = 0;
+
 void notifyClients( std::string data )
 {
 	ws.textAll( (char *)data.c_str() );
@@ -114,9 +116,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			// send the new temperature setting to the websocket clients
 			replyStr = to_string( mode );
 			notifyClients( "modeSet:" + replyStr );
-
-			Serial.print( "GPIO mode: ");
-			Serial.println( someTherm->currentState() );
 		}
 	}
 }
@@ -228,6 +227,8 @@ void setup()
 		request->send(LittleFS, "/marioFont.woff", "font/woff");
 	});
 
+	
+
 	// routes to send peices of data
 	// server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
 	//   request->send_P(200, "text/plain", String(t).c_str());
@@ -251,6 +252,9 @@ void setup()
 
 	initWebSocket();
 
+	// Start ElegantOTA
+	AsyncElegantOTA.begin(&server);
+	
 	// Start server
 	server.begin();
 }
