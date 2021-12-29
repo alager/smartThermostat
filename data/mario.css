@@ -99,6 +99,21 @@
 	right: -43px;
 }
 
+
+.hammerSprite {
+	width: 50px; /* Icon width */
+    height: 53px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	background-position: -580px -8px; /* Icon background position in sprite */
+
+	/* this won't move, so position it here */
+	position: absolute;
+	top: 240px;
+	left: -20px;
+	zoom: 120%
+}
+
+
 .container {
 	position: relative;
 }
