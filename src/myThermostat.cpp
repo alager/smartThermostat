@@ -366,6 +366,8 @@ void MyThermostat::turnOffCooler( void )
 	// turn off the compressor
 	digitalWrite( GPIO_COOLING, LOW );
 
+	// shadow the mode based on GPIO
+	currentMode = MODE_OFF;
 
 	// turn off the fan after a delay
 	if( getFanRunTime() == 0 )
@@ -389,6 +391,9 @@ void MyThermostat::turnOnCooler( void )
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
 		digitalWrite( GPIO_COOLING, HIGH );
+
+		// shadow the mode based on GPIO
+		currentMode = MODE_COOLING;
 	}
 }
 
@@ -405,6 +410,8 @@ void MyThermostat::turnOffHeater( void )
 	// turn off the compressor
 	digitalWrite( GPIO_HEATING, LOW );
 
+	// shadow the mode based on GPIO
+	currentMode = MODE_OFF;
 
 	// turn off the fan after a delay
 	if( getFanRunTime() == 0 )
@@ -421,15 +428,36 @@ void MyThermostat::turnOnHeater( void )
 		// set the flag to prevent short cycling
 		setSafeToRunCompressor( false );
 
-		// set the mode to cooling
-		setMode( MODE_HEATING );
+		// set the mode to heating
+		// setMode( MODE_HEATING );
 
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
 		digitalWrite( GPIO_HEATING, HIGH );
+
+		// shadow the mode based on GPIO
+		currentMode = MODE_HEATING;
 	}
 }
 
+
+// return the current run mode
+mode_e MyThermostat::currentState( void )
+{
+	return currentMode;
+	
+	// if( digitalReadOutputPin( GPIO_HEATING ) == HIGH )
+	// {
+	// 	return MODE_HEATING;
+	// }
+	// else
+	// if( digitalReadOutputPin( GPIO_COOLING ) == HIGH )
+	// {
+	// 	return MODE_COOLING;
+	// }
+	// else
+	// 	return MODE_OFF;
+}
 
 void MyThermostat::turnOffAll( void )
 {
@@ -553,4 +581,17 @@ void MyThermostat::eepromWriteFirstValues( void )
 void MyThermostat::saveSettings( void )
 {
 	EEPROM.commit();
+}
+
+
+// read the output pin to check current value
+int MyThermostat::digitalReadOutputPin(uint8_t pin)
+{
+	uint8_t bit = digitalPinToBitMask(pin);
+	uint8_t port = digitalPinToPort(pin);
+
+	if (port == NOT_A_PIN) 
+		return LOW;
+
+	return (*portOutputRegister(port) & bit) ? HIGH : LOW;
 }

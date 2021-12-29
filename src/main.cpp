@@ -94,9 +94,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			theTemp -= 0.5f;
 			someTherm->setTemperatureSetting( theTemp );
 
-			// Serial.print( "DOWN theTemp: " );
-			// Serial.println( theTemp );
-
 			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
 			notifyClients( "tempSet:" + replyStr );
@@ -117,6 +114,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			// send the new temperature setting to the websocket clients
 			replyStr = to_string( mode );
 			notifyClients( "modeSet:" + replyStr );
+
+			Serial.print( "GPIO mode: ");
+			Serial.println( someTherm->currentState() );
 		}
 	}
 }
@@ -207,8 +207,6 @@ void setup()
 
 	server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		// request->send_P(200, "text/html", index_html, processor);
-		// Serial.println("Pre GET /");
 		request->send(LittleFS, "/page2.html", String(), false, processor);
 	});
 
@@ -276,6 +274,7 @@ void loop()
 		telemetry = "telemetry:";
 		telemetry += to_string( someTherm->getMode() ) + ",";
 		telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
+		telemetry += to_string( someTherm->currentState() ) + ",";
 		telemetry += someTherm->getTemperature() + ",";
 		telemetry += someTherm->getHumidity() + ",";
 		telemetry += someTherm->getPressure();

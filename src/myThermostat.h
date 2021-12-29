@@ -70,6 +70,7 @@ class MyThermostat
 		void turnOffHeater( void );
 		void turnOnHeater( void );
 
+		mode_e currentState( void );
 		void turnOffAll( void );
 
 		bool isSafeToRunCompressor( void );
@@ -84,7 +85,7 @@ class MyThermostat
 		void saveSettings( void );
 		
 	private:
-		// mode_e 			modeSetting;
+		mode_e 			currentMode;
 		unsigned long 	fanRunTime;
 		unsigned long	compressorOffTime;
 
@@ -92,6 +93,9 @@ class MyThermostat
 		bool 			safeToRunCompressor;
 
 		myEEprom_t		eepromData;
+
+
+		int digitalReadOutputPin(uint8_t pin);
 
 };
 #endif

@@ -30,6 +30,7 @@ const chartHeight = 500;
 var mario;
 var modeSetting;
 var tempSet;
+var temperature;
 
 function initWebSocket() {
 	console.log('Trying to open a WebSocket connection...');
@@ -66,8 +67,8 @@ function onMessage(event)
 
 	if( dataType == "tempSet" )
 	{
-		console.log( "DEBUG tempSet");
-		document.getElementById('tempSet').innerHTML = parseFloat( rawData ).toFixed( 1 );
+		//console.log( "DEBUG tempSet");
+		tempSet.innerHTML = parseFloat( rawData ).toFixed( 1 );
 	}
 	else
 	if( dataType == "telemetry" )
@@ -76,12 +77,13 @@ function onMessage(event)
 		const dataArry =	rawData.split( "," );
 		const mode =		dataArry[ 0 ];
 		const tempSetting =	dataArry[ 1 ];
-		const tempAvg =		dataArry[ 2 ];
-		const humidAvg =	dataArry[ 3 ];
-		const presAvg =		dataArry[ 4 ];
+		const currentMode =	dataArry[ 2 ];
+		const tempAvg =		dataArry[ 3 ];
+		const humidAvg =	dataArry[ 4 ];
+		const presAvg =		dataArry[ 5 ];
 
-		document.getElementById('temperature').innerHTML = parseFloat( tempAvg ).toFixed( 1 );
-		document.getElementById('tempSet').innerHTML = parseFloat( tempSetting ).toFixed( 1 );
+		temperature.innerHTML = parseFloat( tempAvg ).toFixed( 1 );
+		tempSet.innerHTML = parseFloat( tempSetting ).toFixed( 1 );
 
 		var modeStr;
 		if( mode == 0 )
@@ -105,6 +107,25 @@ function onMessage(event)
 		modeSetting.innerHTML = modeStr;
 		tempSet.classList.remove( "off", "cooling", "heating" );
 		tempSet.classList.add( modeColor );
+
+		if( currentMode == "0" )
+		{
+			modeColor = "off";
+		}
+		else
+		if( currentMode == "1" )
+		{
+			modeColor = "cooling";
+		}
+		else
+		if( currentMode == "2" )
+		{
+			modeColor = "heating";
+		}
+
+		// change the color for the current state
+		temperature.classList.remove( "off", "cooling", "heating" );
+		temperature.classList.add( modeColor );
 		
 		// draw an XY line chart
 		// data = thermLineChart( tempAvg, humidAvg, presAvg );
@@ -118,6 +139,7 @@ function onMessage(event)
 		const mode = rawData;
 		var modeStr;
 		var modeColor;
+
 		if( mode == 0 )
 		{
 			modeStr = "Off";
@@ -231,6 +253,7 @@ function initButtons()
 
 	modeSetting = document.getElementById('mode');
 	tempSet = document.getElementById('tempSet');
+	temperature = document.getElementById('temperature');
 
 	// populate an element that we animate 
 	mario = document.getElementById('mario');
@@ -299,8 +322,8 @@ document.addEventListener("DOMContentLoaded", function(event)
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
 				<div id="mario" class="sprite marioStanding middleRight"></div>
 				<div id="pipe" class="sprite pipeSprite pipePosition"></div>
-				<div id="temperature" class="temperatureDisplay cooling">65.7</div>
-				<div id="tempSet" class="temperatureSetting cooling">80.7</div>
+				<div id="temperature" class="temperatureDisplay off">65.7</div>
+				<div id="tempSet" class="temperatureSetting off">80.7</div>
 			</div>
 
 			<!-- <button id="clickUp">Up</button>
