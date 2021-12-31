@@ -378,7 +378,7 @@ void MyThermostat::turnOffCooler( void )
 }
 
 
-void MyThermostat::turnOnCooler( void )
+bool MyThermostat::turnOnCooler( void )
 {
 	if( isSafeToRunCompressor() )
 	{
@@ -394,7 +394,13 @@ void MyThermostat::turnOnCooler( void )
 
 		// shadow the mode based on GPIO
 		currentMode = MODE_COOLING;
+
+		// true, the GPIO changed
+		return true;
 	}
+
+	// no GPIO changed
+	return false;
 }
 
 
@@ -421,7 +427,7 @@ void MyThermostat::turnOffHeater( void )
 }
 
 
-void MyThermostat::turnOnHeater( void )
+bool MyThermostat::turnOnHeater( void )
 {
 	if( isSafeToRunCompressor() )
 	{
@@ -437,7 +443,13 @@ void MyThermostat::turnOnHeater( void )
 
 		// shadow the mode based on GPIO
 		currentMode = MODE_HEATING;
+		
+		// true, the GPIO changed
+		return true;
 	}
+
+	// no GPIO changed
+	return false;
 }
 
 
@@ -457,6 +469,9 @@ void MyThermostat::turnOffAll( void )
 	// turn off the heating & cooling
 	digitalWrite( GPIO_HEATING, LOW );
 	digitalWrite( GPIO_COOLING, LOW );
+
+	// shadow the mode based on GPIO
+	currentMode = MODE_OFF;
 
 	// set the flag to prevent short cycling
 	setSafeToRunCompressor( false );

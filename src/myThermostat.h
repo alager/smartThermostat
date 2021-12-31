@@ -64,11 +64,11 @@ class MyThermostat
 		void decrementFanRunTime( void );
 
 		void turnOffCooler( void );
-		void turnOnCooler( void );
+		bool turnOnCooler( void );
 		void clearFanRunOnce( void );
 
 		void turnOffHeater( void );
-		void turnOnHeater( void );
+		bool turnOnHeater( void );
 
 		mode_e currentState( void );
 		void turnOffAll( void );

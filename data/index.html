@@ -162,6 +162,30 @@ function onMessage(event)
 		tempSet.classList.remove( "off", "cooling", "heating" );
 		tempSet.classList.add( modeColor );
 	}
+	else
+	if( dataType == "currentMode" )
+	{
+		const currentMode = rawData;
+
+		if( currentMode == "0" )
+		{
+			modeColor = "off";
+		}
+		else
+		if( currentMode == "1" )
+		{
+			modeColor = "cooling";
+		}
+		else
+		if( currentMode == "2" )
+		{
+			modeColor = "heating";
+		}
+
+		// change the color for the current state
+		temperature.classList.remove( "off", "cooling", "heating" );
+		temperature.classList.add( modeColor );
+	}
 }
 
 
@@ -310,10 +334,9 @@ document.addEventListener("DOMContentLoaded", function(event)
 	
 });
 
-
-
 </script>
 	</head>
+
 	<body>
 		<div>
 			<!--Mario interface-->

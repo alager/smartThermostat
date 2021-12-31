@@ -291,7 +291,10 @@ void loop()
 			if( someTherm->getTemperature_f() > someTherm->getTemperatureSetting() )
 			{
 				// turn on the cooler (if we can)
-				someTherm->turnOnCooler();
+				if( someTherm->turnOnCooler() )
+				{
+					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+				}
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -301,6 +304,7 @@ void loop()
 			{
 				// turn off the cooler, but run fan for a little longer
 				someTherm->turnOffCooler();
+				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
 			}
 
 		}
@@ -310,7 +314,10 @@ void loop()
 			if( someTherm->getTemperature_f() < someTherm->getTemperatureSetting() )
 			{
 				// turn on the heater (if we can)
-				someTherm->turnOnHeater();
+				if( someTherm->turnOnHeater() )
+				{
+					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+				}
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -320,12 +327,14 @@ void loop()
 			{
 				// turn off the heater, but run fan for a little longer
 				someTherm->turnOffHeater();
+				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
 			}
 		}
 		else
 		{
 			// off
 			someTherm->turnOffAll();
+
 		}
 
 		// only check to update the eeprom once per loop
