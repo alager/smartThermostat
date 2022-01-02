@@ -17,7 +17,11 @@
 
 #include "myThermostat.h"
 
+// prototypes
+void sendTelemetry( void );
 
+
+// variables
 MyThermostat *someTherm;
 MyThermostat someThermObj;
 
@@ -25,10 +29,9 @@ MyThermostat someThermObj;
 const char* ssid = "NestRouter1";
 const char* password = "This_isapassword9";
 
-
 // current temperature & humidity, updated in loop()
-float t = 0.0;
-float h = 0.0;
+// float t = 0.0;
+// float h = 0.0;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -127,6 +130,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 	{
 	case WS_EVT_CONNECT:
 		Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+		sendTelemetry();
 		break;
 	case WS_EVT_DISCONNECT:
 		Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -148,19 +152,20 @@ void initWebSocket()
 
 // callback that is used to replace strings in HTML files
 // with variable values
-String processor(const String& var)
-{
-	Serial.println(var);
-	if(var == "TEMPERATURE")
-	{
-		return String(t);
-	}
-	else if(var == "HUMIDITY")
-	{
-		return String(h);
-	}
-	return String();
-}
+// String processor(const String& var)
+// {
+	// Serial.println(var);
+	// if(var == "TEMPERATURE")
+	// {
+	// 	return String(t);
+	// }
+	// else if(var == "HUMIDITY")
+	// {
+	// 	return String(h);
+	// }
+	// return String();
+
+// }
 
 
 void setup()
@@ -201,13 +206,14 @@ void setup()
 	{
 		// request->send_P(200, "text/html", index_html, processor);
 		// Serial.println("Pre GET /");
-		request->send(LittleFS, "/index.html", String(), false, processor);
+		// request->send(LittleFS, "/index.html", String(), false, processor);
+		request->send( LittleFS, "/index.html", "text/html" );
 	});
 
-	server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send(LittleFS, "/page2.html", String(), false, processor);
-	});
+	// server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request)
+	// {
+	// 	request->send(LittleFS, "/page2.html", String(), false, processor);
+	// });
 
 	// Route to load style.css file
 	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -275,15 +281,7 @@ void loop()
 		someTherm->runTick();
 
 		// update websocket data pipe
-		std::string telemetry;
-		telemetry = "telemetry:";
-		telemetry += to_string( someTherm->getMode() ) + ",";
-		telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
-		telemetry += to_string( someTherm->currentState() ) + ",";
-		telemetry += someTherm->getTemperature() + ",";
-		telemetry += someTherm->getHumidity() + ",";
-		telemetry += someTherm->getPressure();
-		notifyClients( telemetry );
+		sendTelemetry();
 		
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )
@@ -344,4 +342,21 @@ void loop()
 		// EEPROM.commit();
 	} // end of 10s loop
 }
-// 
+
+
+void sendTelemetry( void )
+{
+	std::string telemetry;
+
+	// build a telemetry string
+	telemetry = "telemetry:";
+	telemetry += to_string( someTherm->getMode() ) + ",";
+	telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
+	telemetry += to_string( someTherm->currentState() ) + ",";
+	telemetry += someTherm->getTemperature() + ",";
+	telemetry += someTherm->getHumidity() + ",";
+	telemetry += someTherm->getPressure();
+
+	// send it to the clients
+	notifyClients( telemetry );
+}
