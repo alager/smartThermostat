@@ -174,3 +174,17 @@
 	top: 25px;
 	border-radius: 4px;
 }
+
+#delayId {
+	animation: blinker 1s linear infinite;
+	position: absolute;
+	font-size: 50px;
+	left: 350px;
+	top: 5px;
+}
+
+@keyframes blinker {
+	50% {
+	  opacity: 0;
+	}
+  }

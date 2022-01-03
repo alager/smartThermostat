@@ -31,6 +31,7 @@ var mario;
 var modeSetting;
 var tempSet;
 var temperature;
+var delayId;
 
 function initWebSocket() {
 	console.log('Trying to open a WebSocket connection...');
@@ -186,6 +187,13 @@ function onMessage(event)
 		temperature.classList.remove( "off", "cooling", "heating" );
 		temperature.classList.add( modeColor );
 	}
+	else
+	if( dataType == "delay" )
+	{
+		// if the delay is true, then set the hidden attribute to false
+		const data = ( rawData == "true" ) ? false : true;
+		delayId.hidden = data;
+	}
 }
 
 
@@ -278,6 +286,7 @@ function initButtons()
 	modeSetting = document.getElementById('mode');
 	tempSet = document.getElementById('tempSet');
 	temperature = document.getElementById('temperature');
+	delayId = document.getElementById('delayId');
 
 	// populate an element that we animate 
 	mario = document.getElementById('mario');
@@ -342,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 			<!--Mario interface-->
 			<div class="container marioDiv">
 				<div class="sprite hammerSprite"></div>
-				<button id="clickMode">Mode</button> <span id="mode">Heating</span>
+				<button id="clickMode">Mode</button> <span id="mode">Heating</span><span id="delayId"> -- Delay</span>
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
 				<div id="mario" class="sprite marioStanding middleRight"></div>
 				<div id="pipe" class="sprite pipeSprite pipePosition"></div>
