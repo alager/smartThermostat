@@ -116,6 +116,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			// send the new temperature setting to the websocket clients
 			replyStr = to_string( mode );
 			notifyClients( "modeSet:" + replyStr );
+
+			sendTelemetry();
 		}
 	}
 }
@@ -249,10 +251,6 @@ void loop()
 					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
 					notifyClients( "delay:false" );
 				}
-				// else
-				// {
-				// 	notifyClients( "delay:true" );
-				// }
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -278,10 +276,6 @@ void loop()
 					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
 					notifyClients( "delay:false" );
 				}
-				// else
-				// {
-				// 	notifyClients( "delay:true" );
-				// }
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -307,7 +301,6 @@ void loop()
 		// the eeprom will only write to the flash if the 
 		// datastructure cache has been changed
 		someTherm->saveSettings();
-		// EEPROM.commit();
 	} // end of 10s loop
 }
 
@@ -316,7 +309,7 @@ void sendTelemetry( void )
 {
 	std::string telemetry;
 
-	// build a telemetry string
+	// build a comma delimited telemetry string
 	telemetry = "telemetry:";
 	telemetry += to_string( someTherm->getMode() ) + ",";
 	telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
