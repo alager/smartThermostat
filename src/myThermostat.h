@@ -16,7 +16,7 @@ using namespace std;
 #define GPIO_EMGHEAT	(13)
 
 // 5 minutse in second
-#define FIVE_MINUTES ( 300 )
+#define FIVE_MINUTES ( 30 )
 
 typedef enum
 {

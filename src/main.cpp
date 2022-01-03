@@ -17,8 +17,9 @@
 
 #include "myThermostat.h"
 
-// prototypes
+// local prototypes
 void sendTelemetry( void );
+void preModeChange( void );
 
 
 // variables
@@ -74,19 +75,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 		data[len] = 0;
 		if (strcmp((char *)data, "temperatureUp") == 0)
 		{
-			Serial.println( someTherm->getTemperatureSetting() );
-
 			float theTemp = someTherm->getTemperatureSetting();
-			Serial.println( theTemp );
-
 			theTemp += 0.5f;
-			Serial.println( theTemp );
-
 			someTherm->setTemperatureSetting( theTemp );
-			Serial.println( theTemp );
 			
-			Serial.print( "UP theTemp: " );
-			Serial.println( theTemp );
+			// Serial.print( "UP theTemp: " );
+			// Serial.println( theTemp );
 
 			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
@@ -113,6 +107,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				mode = MODE_OFF;
 			else
 				mode = (mode_e)(mode + 1);
+
+			// prep for a mode change
+			preModeChange();
 
 			someTherm->setMode( mode );
 
@@ -149,23 +146,6 @@ void initWebSocket()
 	ws.onEvent(onEvent);
 	server.addHandler(&ws);
 }
-
-// callback that is used to replace strings in HTML files
-// with variable values
-// String processor(const String& var)
-// {
-	// Serial.println(var);
-	// if(var == "TEMPERATURE")
-	// {
-	// 	return String(t);
-	// }
-	// else if(var == "HUMIDITY")
-	// {
-	// 	return String(h);
-	// }
-	// return String();
-
-// }
 
 
 void setup()
@@ -204,8 +184,6 @@ void setup()
 	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		// request->send_P(200, "text/html", index_html, processor);
-		// Serial.println("Pre GET /");
 		// request->send(LittleFS, "/index.html", String(), false, processor);
 		request->send( LittleFS, "/index.html", "text/html" );
 	});
@@ -232,29 +210,6 @@ void setup()
 	{
 		request->send(LittleFS, "/marioFont.woff", "font/woff");
 	});
-
-	
-
-	// routes to send peices of data
-	// server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request){
-	//   request->send_P(200, "text/plain", String(t).c_str());
-	// });
-	// server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest *request)
-	// {
-	// 	// request->send_P(200, "text/plain", therm.getTemperature().c_str());
-	// 	request->send_P(200, "text/plain", String(h).c_str());
-	// });
-	// server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request)
-	// {
-	// 	request->send_P(200, "text/plain", String(h).c_str());
-	// });
-
-	// Route to set GPIO to HIGH
-	// server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
-	// {
-	// 	// digitalWrite(ledPin, HIGH);    
-	// 	request->send(LittleFS, "/index.html", String(), false, processor);
-	// });
 
 	initWebSocket();
 
@@ -292,7 +247,12 @@ void loop()
 				if( someTherm->turnOnCooler() )
 				{
 					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+					notifyClients( "delay:false" );
 				}
+				// else
+				// {
+				// 	notifyClients( "delay:true" );
+				// }
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -303,6 +263,7 @@ void loop()
 				// turn off the cooler, but run fan for a little longer
 				someTherm->turnOffCooler();
 				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+				notifyClients( "delay:false" );
 			}
 
 		}
@@ -315,7 +276,12 @@ void loop()
 				if( someTherm->turnOnHeater() )
 				{
 					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+					notifyClients( "delay:false" );
 				}
+				// else
+				// {
+				// 	notifyClients( "delay:true" );
+				// }
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
@@ -326,12 +292,14 @@ void loop()
 				// turn off the heater, but run fan for a little longer
 				someTherm->turnOffHeater();
 				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
+				notifyClients( "delay:false" );
 			}
 		}
 		else
 		{
 			// off
 			someTherm->turnOffAll();
+			notifyClients( "delay:false" );
 
 		}
 
@@ -359,4 +327,16 @@ void sendTelemetry( void )
 
 	// send it to the clients
 	notifyClients( telemetry );
+}
+
+
+// set the IO and additional items for a mode change
+void preModeChange( void )
+{
+	// turn on the delay blinker.  
+	// If going to off mode, then it'll set it to false on its own
+	notifyClients( "delay:true" );
+
+	// turn off all IO
+	someTherm->turnOffAll();
 }

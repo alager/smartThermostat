@@ -146,8 +146,8 @@ float MyThermostat::getTemperature_f()
 	// low pass filter
 	outputTemp += ( temperature - outputTemp ) / a;
 	
-	Serial.print("TempAvg:	");
-	Serial.println( outputTemp );
+	// Serial.print("TempAvg:	");
+	// Serial.println( outputTemp );
 	return outputTemp;
 }
 
@@ -167,8 +167,8 @@ float MyThermostat::getPressure_f()
 	// read the temperature sensor and convert to in-Hg
 	pressure = bme.readPressure() / 3386.3886666667f;
 
-	Serial.print("Pressure:	");
-	Serial.println( pressure );
+	// Serial.print("Pressure:	");
+	// Serial.println( pressure );
 	return pressure;
 }
 
@@ -215,8 +215,8 @@ float MyThermostat::getHumidity_f()
 	}
 	humidity /= 4.0f;
 
-	Serial.print( "Humidity:	");
-	Serial.println( humidity );
+	// Serial.print( "Humidity:	");
+	// Serial.println( humidity );
 	return humidity;
 }
 
@@ -380,13 +380,14 @@ void MyThermostat::turnOffCooler( void )
 
 bool MyThermostat::turnOnCooler( void )
 {
+	// make sure that the heater is off
+	digitalWrite( GPIO_HEATING, LOW );
+
 	if( isSafeToRunCompressor() )
 	{
-		// set the flag to prevent short cycling
-		setSafeToRunCompressor( false );
-
-		// set the mode to cooling
-		setMode( MODE_COOLING );
+		// // set the flag to prevent short cycling
+		// setSafeToRunCompressor( false );
+		// setCompressorOffTime( FIVE_MINUTES );
 
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
@@ -429,13 +430,14 @@ void MyThermostat::turnOffHeater( void )
 
 bool MyThermostat::turnOnHeater( void )
 {
+	// make sure that the cooler is off
+	digitalWrite( GPIO_COOLING, LOW );
+
 	if( isSafeToRunCompressor() )
 	{
-		// set the flag to prevent short cycling
-		setSafeToRunCompressor( false );
-
-		// set the mode to heating
-		// setMode( MODE_HEATING );
+		// // set the flag to prevent short cycling
+		// setSafeToRunCompressor( false );
+		// setCompressorOffTime( FIVE_MINUTES );
 
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
@@ -476,7 +478,6 @@ void MyThermostat::turnOffAll( void )
 	// set the flag to prevent short cycling
 	setSafeToRunCompressor( false );
 	setCompressorOffTime( FIVE_MINUTES );
-
 }
 
 
