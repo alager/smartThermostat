@@ -74,6 +74,8 @@
     height: 56px; /* Icon height */
 	display: inline-block; /* Display icon as inline block */
 	background-position: -130px -75px; /* Icon background position in sprite */
+
+	cursor: pointer;
 }
 
 
@@ -90,6 +92,8 @@
     height: 100px; /* Icon height */
 	display: inline-block; /* Display icon as inline block */
 	background-position: -24px -393px; /* Icon background position in sprite */
+
+	cursor: pointer;
 }
 
 
@@ -110,7 +114,24 @@
 	position: absolute;
 	top: 240px;
 	left: -20px;
-	zoom: 120%
+	zoom: 120%;
+
+	cursor: pointer;
+}
+
+.starSprite {
+	width: 50px; /* Icon width */
+    height: 53px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	background-position: -270px -8px; /* Icon background position in sprite */
+
+	/* this won't move, so position it here */
+	position: absolute;
+	top: 240px;
+	left: -20px;
+	zoom: 120%;
+
+	cursor: pointer;
 }
 
 

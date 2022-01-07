@@ -32,6 +32,8 @@ var modeSetting;
 var tempSet;
 var temperature;
 var delayId;
+var thermostatView;
+var settingsView;
 
 function initWebSocket() {
 	console.log('Trying to open a WebSocket connection...');
@@ -281,17 +283,24 @@ function thermLineChart( temperature, humidity, pressure )
 
 function initButtons()
 {
-	document.getElementById('clickUp').addEventListener('click', clickUp);
+	//document.getElementById('clickUp').addEventListener('click', clickUp);
 	document.getElementById('topBlock').addEventListener('click', clickUp);
-	document.getElementById('clickDown').addEventListener('click', clickDown);
+	//document.getElementById('clickDown').addEventListener('click', clickDown);
 	document.getElementById('pipe').addEventListener('click', clickDown);
 
 	document.getElementById('clickMode').addEventListener('click', clickMode);
+	document.getElementById('hammer').addEventListener('click', clickHammer);
+	document.getElementById('star').addEventListener('click', clickStar);
 
-	modeSetting = document.getElementById('mode');
-	tempSet = document.getElementById('tempSet');
-	temperature = document.getElementById('temperature');
-	delayId = document.getElementById('delayId');
+
+
+	modeSetting =	document.getElementById('mode');
+	tempSet =		document.getElementById('tempSet');
+	temperature =	document.getElementById('temperature');
+	delayId =		document.getElementById('delayId');
+	thermostatView = document.getElementById('thermostatView');
+	settingsView =	document.getElementById('settingsView');
+
 
 	// populate an element that we animate 
 	mario = document.getElementById('mario');
@@ -310,6 +319,22 @@ function initButtons()
 			mario.classList.remove( "marioMoveDown" );
 	});
 }
+
+
+// change to the settings view
+function clickHammer()
+{
+	thermostatView.hidden = true;
+	settingsView.hidden = false;
+}
+
+// change to the thermostat view
+function clickStar()
+{
+	thermostatView.hidden = false;
+	settingsView.hidden = true;
+}
+
 
 // clicked the up button
 function clickUp()
@@ -352,10 +377,12 @@ document.addEventListener("DOMContentLoaded", function(event)
 	</head>
 
 	<body>
-		<div>
+		<div id="thermostatView">
 			<!--Mario interface-->
 			<div class="container marioDiv">
-				<div class="sprite hammerSprite"></div>
+				<!-- hammer takes user to settings -->
+				<div id="hammer" class="sprite hammerSprite"></div>
+
 				<button id="clickMode">Mode</button> <span id="mode">Heating</span><span id="delayId"> -- Delay</span>
 				<div id="topBlock" class="sprite blockSprite blockPosition"></div>
 				<div id="mario" class="sprite marioStanding middleRight"></div>
@@ -363,20 +390,21 @@ document.addEventListener("DOMContentLoaded", function(event)
 				<div id="temperature" class="temperatureDisplay off">88.8</div>
 				<div id="tempSet" class="temperatureSetting off">99.9</div>
 			</div>
-
-			<!-- <button id="clickUp">Up</button>
-			<button id="clickDown">Down</button> -->
 		</div>
 		<!--This is the controls deleopment div below-->
-		<div hidden>
-			<h1>Lager Stat</h1>
+		<div id="settingsView"  class="container" hidden>
+			<h1>Settings</h1>
 			<div>
-				<button id="clickUp">Up</button> <button id="clickDown">Down</button>
-				<button id="clickMode">Mode</button>
+				<label for="fanDelay">Fan Delay:</label>
+				<input type="number" id="fanDelay" name="fanDelay" placeholder="seconds"><br>
+				<label for="compressorOffDelay">Compressor Off Delay:</label>
+				<input type="number" id="compressorOffDelay" name="compressorOffDelay" placeholder="seconds"><br>
+				<label for="compressorMaxRuntime">Compressor Max Runtime:</label>
+				<input type="number" id="compressorMaxRuntime" name="compressorMaxRuntime" placeholder="seconds"><br>
+
+				<!-- star goes back to thermostat view -->
+				<div id="star" class="sprite starSprite"></div>
 			</div>
-			Temperature: <span id="temperature">00.00</span>&deg;F<br>
-			TempSet: <span id="tempSet">00.00</span>&deg;F
-			Mode: <span id="mode"></span>
 			<div class='with-3d-shadow with-transitions' >
 				<div id="chart"></div>
 			</div>
