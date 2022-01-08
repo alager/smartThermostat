@@ -1,4 +1,3 @@
-
 :root {
 	--marioX: -15px;	/*use with right*/
 	--marioY: 130px;	/*use with top*/
@@ -41,7 +40,6 @@
 	100% { right:var(--marioX); top:var(--marioY);}
 }
 
-
 .marioMoveDown {
 	animation-name: MarioFall;
 	animation-duration: 500ms;
@@ -78,13 +76,11 @@
 	cursor: pointer;
 }
 
-
 .blockPosition{
 	position: absolute;
 	top: 10px;
 	right: -15px;
 }
-
 
 /* select the block sprite */
 .pipeSprite {
@@ -96,13 +92,11 @@
 	cursor: pointer;
 }
 
-
 .pipePosition{
 	position: absolute;
 	top: 250px;
 	right: -43px;
 }
-
 
 .hammerSprite {
 	width: 50px; /* Icon width */
@@ -138,8 +132,6 @@
 .container {
 	position: relative;
 }
-
-
 
 /* Fonts */
 @font-face {
@@ -251,15 +243,6 @@
 	width: 100%;
 	text-align: center;
 }
-
-/* Number text (1/3 etc) */
-/* .numbertext {
-	/* color: #f2f2f2; */
-	/* font-size: 12px;
-	padding: 8px 12px;
-	position: absolute;
-	top: 0;
-} */
 
 .cardSize{
 	height: 150px;
