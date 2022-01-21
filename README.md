@@ -1,5 +1,5 @@
 Smart-ish thermostat based on ESP8266 and a BME280 temperature, humidity and pressure sensor.
-The user interface is web based, and optimized for a cell phone experience.
+The user interface is web based, and optimized for a sideways (landscape) cell phone experience.
 
 ## Screen Shots:
 #### Cooling
