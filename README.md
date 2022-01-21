@@ -3,10 +3,10 @@ The user interface is web based, and optimized for a cell phone experience.
 
 <h2>Screen Shots:</h2>
 <b>Cooling</b><br>
-![cooling](https://raw.githubusercontent.com/alager/smartThermostat/main/ScreenShots/Cooling.PNG)
+![cooling](ScreenShots/Cooling.PNG?raw=true)
 
 <br>
 <b>Heating</b><br>
-![heating](https://raw.githubusercontent.com/alager/smartThermostat/main/ScreenShots/Heating.PNG)
+![heating](/ScreenShots/Heating.PNG?raw=true)
 
 <br>
