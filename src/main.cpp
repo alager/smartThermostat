@@ -15,6 +15,7 @@
 #include <Adafruit_BME280.h>
 #include <AsyncElegantOTA.h>
 #include <ESP8266mDNS.h>
+#include <ezTime.h>
 
 #include "myThermostat.h"
 
@@ -40,6 +41,9 @@ AsyncWebServer server(80);
 
 // create a web socket object
 AsyncWebSocket ws("/ws");
+
+// create a time & timezone object
+Timezone myTZ;
 
 // Generally, you should use "unsigned long" for variables that hold time
 // The value will quickly become too large for an int to store
@@ -197,6 +201,20 @@ void setup()
 	// add this for mDNS to respond
 	MDNS.addService("http", "TCP", 80);
 
+	// debug ezTime
+	//setDebug(INFO);
+
+	// wait for ezTime to sync
+	Serial.println( "Syncing with NTP" );
+	waitForSync();
+
+	// Provide official timezone names
+	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	myTZ.setLocation(F("America/Chicago"));
+	Serial.print(F("Central Time:     "));
+	Serial.println(myTZ.dateTime());
+
+
 	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
@@ -319,6 +337,10 @@ void loop()
 
 	// run the mDNS processor loop
 	MDNS.update();
+	
+	// run the ezTime task
+	// this will poll pool.ntp.org about every 30 minutes
+	events();
 }
 
 
