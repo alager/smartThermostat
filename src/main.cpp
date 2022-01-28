@@ -5,7 +5,7 @@
 
 // Import required libraries
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
+#include <ESP8266WifiMulti.h>
 #include <Hash.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -14,6 +14,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <AsyncElegantOTA.h>
+#include <ESP8266mDNS.h>
 
 #include "myThermostat.h"
 
@@ -183,6 +184,19 @@ void setup()
 	// Print ESP8266 Local IP Address
 	Serial.println(WiFi.localIP());
 
+	// Now that WiFi is connected start mDNS
+	if( WiFi.status() == WL_CONNECTED ) 
+	{
+		// Start mDNS with name esp8266
+		if( MDNS.begin( "therm1" ) )
+		{ 
+			Serial.println("MDNS started");
+		}
+	}
+
+	// add this for mDNS to respond
+	MDNS.addService("http", "TCP", 80);
+
 	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
@@ -215,7 +229,7 @@ void setup()
 
 	initWebSocket();
 
-	// Start ElegantOTA
+	// Start Elegant OTA
 	AsyncElegantOTA.begin(&server);
 	// AsyncElegantOTA.begin(&server, "username", "password");
 	
@@ -302,6 +316,9 @@ void loop()
 		// datastructure cache has been changed
 		someTherm->saveSettings();
 	} // end of 10s loop
+
+	// run the mDNS processor loop
+	MDNS.update();
 }
 
 
