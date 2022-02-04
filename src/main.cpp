@@ -16,12 +16,16 @@
 #include <AsyncElegantOTA.h>
 #include <ESP8266mDNS.h>
 #include <ezTime.h>
+#include <ArduinoJson.h>
 
 #include "myThermostat.h"
 
 // local prototypes
 void sendTelemetry( void );
 void preModeChange( void );
+void sendDelayStatus( bool status );
+void sendCurrentMode( void );
+
 
 
 // variables
@@ -40,7 +44,7 @@ const char* password = "This_isapassword9";
 AsyncWebServer server(80);
 
 // create a web socket object
-AsyncWebSocket ws("/ws");
+AsyncWebSocket webSock("/ws");
 
 // create a time & timezone object
 Timezone myTZ;
@@ -60,7 +64,7 @@ const unsigned long interval = 10000;
 
 void notifyClients( std::string data )
 {
-	ws.textAll( (char *)data.c_str() );
+	webSock.textAll( (char *)data.c_str() );
 }
 
 
@@ -89,7 +93,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
-			notifyClients( "tempSet:" + replyStr );
+			notifyClients( "{\"tempSet\":" + replyStr + "}" );
 		}
 		else
 		if (strcmp((char *)data, "temperatureDown") == 0)
@@ -100,7 +104,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 			replyStr = to_string( theTemp );
 			// send the new temperature setting to the websocket clients
-			notifyClients( "tempSet:" + replyStr );
+			notifyClients( "{\"tempSet\":" + replyStr + "}" );
 		}
 		else
 		if (strcmp((char *)data, "modeClick") == 0)
@@ -120,7 +124,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 			// send the new temperature setting to the websocket clients
 			replyStr = to_string( mode );
-			notifyClients( "modeSet:" + replyStr );
+			notifyClients( "{\"modeSet\":" + replyStr + "}" );
 
 			sendTelemetry();
 		}
@@ -150,8 +154,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 
 void initWebSocket()
 {
-	ws.onEvent(onEvent);
-	server.addHandler(&ws);
+	webSock.onEvent(onEvent);
+	server.addHandler(&webSock);
 }
 
 
@@ -280,8 +284,8 @@ void loop()
 				// turn on the cooler (if we can)
 				if( someTherm->turnOnCooler() )
 				{
-					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
-					notifyClients( "delay:false" );
+					sendCurrentMode();
+					sendDelayStatus( false );
 				}
 
 				// allow the extended fan run time happen again
@@ -292,8 +296,8 @@ void loop()
 			{
 				// turn off the cooler, but run fan for a little longer
 				someTherm->turnOffCooler();
-				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
-				notifyClients( "delay:false" );
+				sendCurrentMode();
+				sendDelayStatus( false );
 			}
 
 		}
@@ -305,8 +309,8 @@ void loop()
 				// turn on the heater (if we can)
 				if( someTherm->turnOnHeater() )
 				{
-					notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
-					notifyClients( "delay:false" );
+					sendCurrentMode();
+					sendDelayStatus( false );
 				}
 
 				// allow the extended fan run time happen again
@@ -317,15 +321,15 @@ void loop()
 			{
 				// turn off the heater, but run fan for a little longer
 				someTherm->turnOffHeater();
-				notifyClients( "currentMode:" + to_string( someTherm->currentState() ) );
-				notifyClients( "delay:false" );
+				sendCurrentMode();
+				sendDelayStatus( false );
 			}
 		}
 		else
 		{
 			// off
 			someTherm->turnOffAll();
-			notifyClients( "delay:false" );
+			sendDelayStatus( false );
 
 		}
 
@@ -346,19 +350,29 @@ void loop()
 
 void sendTelemetry( void )
 {
-	std::string telemetry;
+	std::string telemetryStr;
 
 	// build a comma delimited telemetry string
-	telemetry = "telemetry:";
-	telemetry += to_string( someTherm->getMode() ) + ",";
-	telemetry += to_string( someTherm->getTemperatureSetting() ) + ",";
-	telemetry += to_string( someTherm->currentState() ) + ",";
-	telemetry += someTherm->getTemperature() + ",";
-	telemetry += someTherm->getHumidity() + ",";
-	telemetry += someTherm->getPressure();
+
+	// StaticJsonObject allocates memory on the stack
+	StaticJsonDocument<200> doc;
+
+	JsonObject telemetry  =			doc.createNestedObject("telemetry");
+	telemetry[ "mode" ] =			someTherm->getMode();
+	telemetry[ "tempSetting" ] =	someTherm->getTemperatureSetting();
+	telemetry[ "currentMode" ] =	someTherm->currentState();
+	telemetry[ "tempAvg" ] =		someTherm->getTemperature_f();
+	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
+	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
+
+	// Generate the prettified JSON and send it to the Serial port.
+	serializeJsonPretty(doc, Serial);
+
+	// put it into a buffer to send to the clients
+	serializeJson( doc, telemetryStr );
 
 	// send it to the clients
-	notifyClients( telemetry );
+	notifyClients( telemetryStr );
 }
 
 
@@ -367,8 +381,30 @@ void preModeChange( void )
 {
 	// turn on the delay blinker.  
 	// If going to off mode, then it'll set it to false on its own
-	notifyClients( "delay:true" );
+	sendDelayStatus( true );
 
 	// turn off all IO
 	someTherm->turnOffAll();
+}
+
+
+// let the web socket know the delay status
+// use simple preformated json string
+void sendDelayStatus( bool status )
+{
+	if( status )
+		notifyClients( "{\"delay\":true}" );
+	else
+		notifyClients( "{\"delay\":false}" );
+}
+
+
+void sendCurrentMode( void )
+{
+	std::string currentState;
+	currentState = "{\"currentMode\":";
+	currentState +=  someTherm->currentState();
+	currentState += "}";
+
+	notifyClients( currentState );
 }
