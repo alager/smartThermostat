@@ -198,8 +198,20 @@ function onMessage(event)
 	{
 		var dly = data.delay;
 		// if the delay is true, then set the hidden attribute to false
-		const data = ( dly.delay == "true" ) ? false : true;
-		delayId.hidden = data;
+		const trueFalse = ( dly.delay == "true" ) ? false : true;
+		delayId.hidden = trueFalse;
+	}
+	else
+	if( data.hasOwnProperty( "settings" ) )
+	{
+		var settings = data.settings;
+		var fanDelay =	document.getElementById('fanDelay');
+		var compressorOffDelay = document.getElementById('compressorOffDelay');
+		var compressorMaxRuntime = document.getElementById('compressorMaxRuntime');
+
+		fanDelay.value = settings.fanDelay;
+		compressorOffDelay = settings.compressorOffDelay;
+		compressorMaxRuntime = settings.compressorMaxRuntime;
 	}
 }
 
@@ -331,6 +343,9 @@ function clickStar()
 {
 	thermostatView.hidden = false;
 	settingsView.hidden = true;
+
+	// have the server send the settings up
+	websocket.send( "sendSettings" );
 }
 
 
@@ -436,8 +451,6 @@ function showSlides(n) {
 				<label for="fanDelay">Fan Delay:</label>
 				<input type="number" id="fanDelay" name="fanDelay" placeholder="seconds"><br>
 			</div>
-			<!-- star goes back to thermostat view -->
-			<!-- <div id="star" class="sprite starSprite"></div> -->
 			<div class="text">Enter the number of seconds for the fan to run after the compressor turns off. This 
 				will improve energy efficiency.
 			</div>
@@ -447,8 +460,6 @@ function showSlides(n) {
 				<label for="compressorOffDelay">Compressor Off Delay:</label>
 				<input type="number" id="compressorOffDelay" name="compressorOffDelay" placeholder="seconds"><br>
 			</div>
-			<!-- star goes back to thermostat view -->
-			<!-- <div id="star" class="sprite starSprite"></div> -->
 			<div class="text">Enter the number of seconds for the compressor to remain off before starting up again.</div>
 		</div>
 	
@@ -457,8 +468,6 @@ function showSlides(n) {
 				<label for="compressorMaxRuntime">Compressor Max Runtime:</label>
 				<input type="number" id="compressorMaxRuntime" name="compressorMaxRuntime" placeholder="minutes"><br>
 			</div>
-			<!-- star goes back to thermostat view -->
-			<!-- <div id="star" class="sprite starSprite"></div> -->
 			<div class="text">Enter the number of minutes that the compressor is allowed to run before force shutoff.</div>
 		</div>
   
