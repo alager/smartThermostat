@@ -74,7 +74,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
 	std::string replyStr;
 
-	Serial.println( "Got Data from WebSocket");
+	Serial.println( F( "Got Data from WebSocket" ));
 	data[len] = 0;
 	Serial.println( (char *)data );
 
@@ -128,6 +128,47 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 			sendTelemetry();
 		}
+		else  
+		if (strcmp((char *)data, "sendSettings") == 0)
+		{
+			// send the settings to the websockets
+			std::string settingsStr;
+
+			// StaticJsonObject allocates memory on the stack
+			StaticJsonDocument<200> doc;
+			JsonObject settings  =	doc.createNestedObject("settings");
+			settings[ "fanDelay" ] = 			 someTherm->settings_getFanDelay();
+			settings[ "compressorOffDelay" ]  =	 someTherm->settings_getCompressorOffDelay();
+			settings[ "compressorMaxRuntime" ] = someTherm->settings_getCompressorMaxRuntime();
+		
+			//serializeJsonPretty( doc, Serial );
+
+			// put it into a buffer to send to the clients
+			serializeJson( doc, settingsStr );
+
+			// send it to the clients
+			notifyClients( settingsStr );
+		}
+		else
+		{
+			Serial.println( F("trying it as JSON"));
+
+			// try to parse as JSON
+			StaticJsonDocument<200> json;
+			DeserializationError err = deserializeJson(json, data);
+			if (err)
+			{
+				Serial.print(F("deserializeJson() failed with code "));
+				Serial.println(err.c_str());
+				return;
+			}
+
+			//unsigned short fanDelay = json["settings"]["fanDelay"];
+			someTherm->settings_setFanDelay( json["settings"]["fanDelay"] );
+			someTherm->settings_setCompressorOffDelay( json["settings"]["compressorOffDelay"] );
+			someTherm->settings_setCompressorMaxRuntime( json["settings"]["compressorMaxRuntime"] );
+
+		}
 	}
 }
 
@@ -169,20 +210,20 @@ void setup()
 	someTherm->init();
 
 	// debug, set the mode to cooling
-	Serial.print( "isMode: " );
+	Serial.print( F( "isMode: " ));
 	Serial.println( someTherm->getMode() );
 
 	
 	// Initialize SPIFFS
 	if(!LittleFS.begin())
 	{
-		Serial.println("An Error has occurred while mounting SPIFFS");
+		Serial.println( F( "An Error has occurred while mounting LittleFS" ));
 		return;
 	}
 
 	// Connect to Wi-Fi
 	WiFi.begin(ssid, password);
-	Serial.println("Connecting to WiFi");
+	Serial.println(F("Connecting to WiFi"));
 	while (WiFi.status() != WL_CONNECTED)
 	{
 		delay(1000);
@@ -198,7 +239,7 @@ void setup()
 		// Start mDNS with name esp8266
 		if( MDNS.begin( "therm1" ) )
 		{ 
-			Serial.println("MDNS started");
+			Serial.println(F("MDNS started"));
 		}
 	}
 
@@ -209,14 +250,14 @@ void setup()
 	//setDebug(INFO);
 
 	// wait for ezTime to sync
-	Serial.println( "Syncing with NTP" );
+	Serial.println(F( "Syncing with NTP" ) );
 	waitForSync();
 
 	// Provide official timezone names
 	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	myTZ.setLocation(F("America/Chicago"));
-	Serial.print(F("Central Time:     "));
-	Serial.println(myTZ.dateTime());
+	myTZ.setLocation( F( "America/Chicago" ));
+	Serial.print( F( "Central Time:     " ));
+	Serial.println( myTZ.dateTime() );
 
 
 	// Route for root / web page
@@ -352,8 +393,6 @@ void sendTelemetry( void )
 {
 	std::string telemetryStr;
 
-	// build a comma delimited telemetry string
-
 	// StaticJsonObject allocates memory on the stack
 	StaticJsonDocument<200> doc;
 
@@ -366,7 +405,7 @@ void sendTelemetry( void )
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
 
 	// Generate the prettified JSON and send it to the Serial port.
-	serializeJsonPretty(doc, Serial);
+	//serializeJsonPretty(doc, Serial);
 
 	// put it into a buffer to send to the clients
 	serializeJson( doc, telemetryStr );
@@ -403,8 +442,10 @@ void sendCurrentMode( void )
 {
 	std::string currentState;
 	currentState = "{\"currentMode\":";
-	currentState +=  someTherm->currentState();
+	currentState +=  to_string( someTherm->currentState() );
 	currentState += "}";
+
+	// Serial.println( currentState.c_str() );
 
 	notifyClients( currentState );
 }

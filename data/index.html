@@ -210,12 +210,29 @@ function onMessage(event)
 		var compressorMaxRuntime = document.getElementById('compressorMaxRuntime');
 
 		fanDelay.value = settings.fanDelay;
-		compressorOffDelay = settings.compressorOffDelay;
-		compressorMaxRuntime = settings.compressorMaxRuntime;
+		compressorOffDelay.value = settings.compressorOffDelay;
+		compressorMaxRuntime.value = settings.compressorMaxRuntime;
 	}
 }
 
 
+// get all the settings and send them back to the server
+function saveSettings()
+{
+	var fanDelay =	document.getElementById('fanDelay');
+	var compressorOffDelay = document.getElementById('compressorOffDelay');
+	var compressorMaxRuntime = document.getElementById('compressorMaxRuntime');
+
+	var settings = {};
+	settings.fanDelay = fanDelay.value;
+	settings.compressorMaxRuntime = compressorMaxRuntime.value;
+	settings.compressorOffDelay = compressorOffDelay.value;
+	
+	var mySettings = {};
+	mySettings.settings = settings;
+
+	websocket.send( JSON.stringify( mySettings ) );
+}
 
 // graphing javascript
 /*These lines are all chart setup.  Pick and choose which chart features you want to utilize. */
@@ -302,8 +319,6 @@ function initButtons()
 	document.getElementById('hammer').addEventListener('click', clickHammer);
 	document.getElementById('star').addEventListener('click', clickStar);
 
-
-
 	modeSetting =	document.getElementById('mode');
 	tempSet =		document.getElementById('tempSet');
 	temperature =	document.getElementById('temperature');
@@ -336,6 +351,9 @@ function clickHammer()
 {
 	thermostatView.hidden = true;
 	settingsView.hidden = false;
+
+	// request the server send the settings up
+	websocket.send( "sendSettings" );
 }
 
 // change to the thermostat view
@@ -344,8 +362,8 @@ function clickStar()
 	thermostatView.hidden = false;
 	settingsView.hidden = true;
 
-	// have the server send the settings up
-	websocket.send( "sendSettings" );
+	// send settings back to the server to be saved
+	saveSettings();
 }
 
 

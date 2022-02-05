@@ -554,6 +554,33 @@ void MyThermostat::eepromInit( void )
 }
 
 
+unsigned short MyThermostat::settings_getFanDelay( void )
+{
+	return eepromData.fanDelay;
+}
+unsigned short MyThermostat::settings_getCompressorOffDelay( void )
+{
+	return eepromData.compressorOffDelay;
+}
+unsigned short MyThermostat::settings_getCompressorMaxRuntime( void )
+{
+	return eepromData.compressorMaxRuntime;
+}
+
+void MyThermostat::settings_setFanDelay( unsigned short fanDelay )
+{
+	eepromData.fanDelay = fanDelay;
+}
+void MyThermostat::settings_setCompressorOffDelay( unsigned short compressorOffDelay )
+{
+	eepromData.compressorOffDelay = compressorOffDelay;
+}
+void MyThermostat::settings_setCompressorMaxRuntime( unsigned short compressorMaxRuntime)
+{
+	eepromData.compressorMaxRuntime = compressorMaxRuntime;
+}
+
+
 // return true if the cookie is valid
 // otherwise return false
 bool MyThermostat::eepromCookieIsValid( void )
@@ -574,6 +601,10 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.coolTemp =	75.0f;
 	eepromData.hotTemp =	66.5f;
 	eepromData.mode =		MODE_OFF;
+
+	eepromData.fanDelay =			120;		// 2 minutes in seconds
+	eepromData.compressorOffDelay =	300;		// 5 minutes in seconds		
+	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
 
 	EEPROM.put( addr, eepromData );
 	EEPROM.commit();

@@ -7,8 +7,6 @@
 #include <EEPROM.h>
 using namespace std;
 
-#define MAGIC_COOKIE	( 0xdebb1e01 )
-
 #define GPIO_FAN 		(2)
 // #define GPIO_COOLING	(16)
 #define GPIO_COOLING	(14)
@@ -25,12 +23,18 @@ typedef enum
 	MODE_HEATING
 } mode_e;
 
+
+#define MAGIC_COOKIE	( 0xdebb1e03 )
 typedef struct 
 {
 	unsigned long	cookie;			// magic cookie for versioning
 	float			coolTemp;		// the cool temperature setting
 	float			hotTemp;		// the hot temperature setting
 	mode_e			mode;			// the last mode
+
+	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor turns off
+	unsigned short	compressorOffDelay;		// how long the compressor must stay off once turned off
+	unsigned short	compressorMaxRuntime;	// how long the compressor can run before being forced off
 } myEEprom_t;
 
 
@@ -83,6 +87,13 @@ class MyThermostat
 		bool eepromCookieIsValid( void );
 		void eepromWriteFirstValues( void );
 		void saveSettings( void );
+
+		unsigned short settings_getFanDelay( void );
+		unsigned short settings_getCompressorOffDelay( void );
+		unsigned short settings_getCompressorMaxRuntime( void );
+		void settings_setFanDelay( unsigned short );
+		void settings_setCompressorOffDelay( unsigned short );
+		void settings_setCompressorMaxRuntime( unsigned short );
 		
 	private:
 		mode_e 			currentMode;
