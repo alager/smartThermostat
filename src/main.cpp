@@ -320,7 +320,7 @@ void loop()
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )
 		{
-			if( someTherm->getTemperature_f() > someTherm->getTemperatureSetting() )
+			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + 0.2f ))
 			{
 				// turn on the cooler (if we can)
 				if( someTherm->turnOnCooler() )
@@ -345,7 +345,7 @@ void loop()
 		else
 		if( someTherm->isMode( MODE_HEATING ) )
 		{
-			if( someTherm->getTemperature_f() < someTherm->getTemperatureSetting() )
+			if( someTherm->getTemperature_f() < ( someTherm->getTemperatureSetting() - 0.2f ) )
 			{
 				// turn on the heater (if we can)
 				if( someTherm->turnOnHeater() )
@@ -378,6 +378,10 @@ void loop()
 		// the eeprom will only write to the flash if the 
 		// datastructure cache has been changed
 		someTherm->saveSettings();
+
+		// clean up dangling websockets
+		 webSock.cleanupClients();
+		 
 	} // end of 10s loop
 
 	// run the mDNS processor loop

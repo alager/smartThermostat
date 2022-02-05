@@ -258,3 +258,15 @@
 .active, .dot:hover {
 	background-color: #717171;
 }
+
+#humidity {
+	position: absolute;
+	left: 400px;
+	font-size: 20px;
+}
+
+#pressure {
+	position: absolute;
+	left: 140px;
+	font-size: 20px;
+}
