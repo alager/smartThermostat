@@ -163,11 +163,19 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				return;
 			}
 
-			//unsigned short fanDelay = json["settings"]["fanDelay"];
-			someTherm->settings_setFanDelay( json["settings"]["fanDelay"] );
-			someTherm->settings_setCompressorOffDelay( json["settings"]["compressorOffDelay"] );
-			someTherm->settings_setCompressorMaxRuntime( json["settings"]["compressorMaxRuntime"] );
-
+			if( json["settings"]["fanDelay"] == 0 
+			 && json["settings"]["compressorOffDelay"] == 0
+			 && json["settings"]["compressorMaxRuntime"] == 0 )
+			 {
+				 // bad stuff happened on the network...keep our existing values
+			 }
+			 else
+			 {
+				//unsigned short fanDelay = json["settings"]["fanDelay"];
+				someTherm->settings_setFanDelay( json["settings"]["fanDelay"] );
+				someTherm->settings_setCompressorOffDelay( json["settings"]["compressorOffDelay"] );
+				someTherm->settings_setCompressorMaxRuntime( json["settings"]["compressorMaxRuntime"] );
+			 }
 		}
 	}
 }
@@ -381,7 +389,7 @@ void loop()
 
 		// clean up dangling websockets
 		 webSock.cleanupClients();
-		 
+
 	} // end of 10s loop
 
 	// run the mDNS processor loop
