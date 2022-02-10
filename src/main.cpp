@@ -298,6 +298,12 @@ void setup()
 		request->send(LittleFS, "/marioFont.woff", "font/woff");
 	});
 
+	// deal with the favicon.ico
+	server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/favicon.ico", "image/x-image");
+	});
+
 	initWebSocket();
 
 	// Start Elegant OTA
@@ -415,6 +421,7 @@ void sendTelemetry( void )
 	telemetry[ "tempAvg" ] =		someTherm->getTemperature_f();
 	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
+	telemetry[ "time" ] =			myTZ.dateTime( "l, g:i:s A" );
 
 	// Generate the prettified JSON and send it to the Serial port.
 	//serializeJsonPretty(doc, Serial);

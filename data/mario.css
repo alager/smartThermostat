@@ -150,7 +150,7 @@
 .temperatureSetting {
 	font-size: 90px;
 	position: absolute;
-	top: 250px;
+	top: 240px;
 	left: 200px;
 	-webkit-text-stroke: 1px black;
 }
@@ -172,7 +172,7 @@
 	position: absolute;
 	font-size: 50px;
 	left: 140px;
-	top: 5px;
+	top: 10px;
 }
 
 /* style the mode button */
@@ -189,7 +189,7 @@
 	position: absolute;
 	font-size: 50px;
 	left: 350px;
-	top: 5px;
+	top: 10px;
 }
 
 @keyframes blinker {
@@ -269,4 +269,11 @@
 	position: absolute;
 	left: 140px;
 	font-size: 20px;
+}
+
+#dsplyTime {
+	position: absolute;
+	font-size: 25px;
+	left: 170px;
+	top: 330px;
 }

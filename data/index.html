@@ -21,8 +21,7 @@
 	<title>Lager Stat</title>
 
 <script>
-const gateway = `ws://${window.location.hostname}/ws`;
-var websocket;
+
 var chart;
 var data;
 const chartHeight = 500;
@@ -38,25 +37,44 @@ var pressureValue;
 var delayId;
 var thermostatView;
 var settingsView;
+var dsplyTime;
 
-function initWebSocket() {
-	console.log('Trying to open a WebSocket connection...');
-	websocket = new WebSocket(gateway);
-	websocket.onopen = onOpen;
-	websocket.onclose = onClose;
-	websocket.onmessage = onMessage; // <-- add this line
+// to handle websocket (re)connections
+const gateway = `ws://${window.location.hostname}/ws`;
+var websocket;
+var sockTimer=null;
+const wsRetry = 10; // number of seconds to wait for retry
+
+function initWebSocket() 
+{
+	console.log( 'Trying to open a WebSocket connection...' );
+	websocket = new WebSocket( gateway );
+	websocket.onopen =		onOpen;
+	websocket.onerror =		onError;
+	websocket.onclose = 	onClose;
+	websocket.onmessage =	onMessage;
 }
 
-function onOpen(event) {
-	console.log('Connection opened');
+function onOpen( event ) 
+{
+	clearInterval( sockTimer );
+	console.log( 'Connection opened' );
 }
 
-function onClose(event) {
-	console.log('Connection closed');
-	setTimeout(initWebSocket, 2000);
+function onError( event )
+{
+	console.log( 'Connection error - trying again' );
+	sockTimer = setInterval( initWebSocket, 1000 * wsRetry );
 }
 
-function onMessage(event) 
+function onClose( event ) 
+{
+	console.log( 'Connection closed - reconnecting' );
+	sockTimer = setInterval( initWebSocket, 1000 * wsRetry );
+}
+
+// The websocket received  amessage, so process it
+function onMessage( event ) 
 {
 	if( typeof( event.data ) != "string" )
 	{
@@ -82,6 +100,7 @@ function onMessage(event)
 		tempSet.innerHTML = parseFloat( tlm.tempSetting ).toFixed( 1 );
 		pressureValue.innerHTML = parseFloat( tlm.presAvg ).toFixed( 1 );
 		humidityValue.innerHTML = parseFloat( tlm.humidAvg ).toFixed( 1 );
+		dsplyTime.innerHTML = tlm.time;
 
 		var modeStr;
 		if( tlm.mode == 0 )
@@ -323,6 +342,7 @@ function initButtons()
 	delayId =		document.getElementById('delayId');
 	thermostatView = document.getElementById('thermostatView');
 	settingsView =	document.getElementById('settingsView');
+	dsplyTime =		document.getElementById( 'dsplyTime' );
 
 
 	// populate an element that we animate 
@@ -436,7 +456,6 @@ function showSlides(n) {
 
 </script>
 	</head>
-
 	<body>
 		<div id="thermostatView">
 			<!--Mario interface-->
@@ -452,6 +471,7 @@ function showSlides(n) {
 				<div id="tempSet" class="temperatureSetting off">99.9</div>
 				<div id="humidity">Humidity: <span id="humidityValue">11.1</span> %</div>
 				<div id="pressure">Pressure: <span id="pressureValue">22.2</span> mmHg</div>
+				<div id="dsplyTime">13:12:11</div>
 			</div>
 		</div>
 		<!--This is the controls deleopment div below-->
