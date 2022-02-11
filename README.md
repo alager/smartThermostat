@@ -9,3 +9,9 @@ The user interface is web based, and optimized for a sideways (landscape) cell p
 ![heating](https://github.com/alager/smartThermostat/raw/main/ScreenShots/Heating.PNG?raw=true)
 
 <br>
+
+TODO:
+- optimize the sprite sheet to remove unused sprites
+- add a few more mario sprites to allow "running" when heat or cool is active
+- add schedules
+- add time zone user entry
