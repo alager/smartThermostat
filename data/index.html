@@ -227,21 +227,37 @@ function onMessage( event )
 		fanDelay.value = settings.fanDelay;
 		compressorOffDelay.value = settings.compressorOffDelay;
 		compressorMaxRuntime.value = settings.compressorMaxRuntime;
+
+		const tzVal = getObjKey( tzMap, settings.timeZone );
+		document.querySelector("input[name=timeZone][value=" + tzVal +"]").click();
 	}
 }
 
+// do a reverse lookup for key by value
+function getObjKey(obj, value) 
+{
+  return Object.keys(obj).find(key => obj[key] === value);
+}
 
+var tzMap = {
+	ePST: 0,
+	eMST: 1,
+	eCST: 2,
+	eEST: 3
+}
 // get all the settings and send them back to the server
 function saveSettings()
 {
-	var fanDelay =	document.getElementById('fanDelay');
-	var compressorOffDelay = document.getElementById('compressorOffDelay');
-	var compressorMaxRuntime = document.getElementById('compressorMaxRuntime');
+	var fanDelay =				document.getElementById( 'fanDelay' );
+	var compressorOffDelay = 	document.getElementById( 'compressorOffDelay' );
+	var compressorMaxRuntime = 	document.getElementById( 'compressorMaxRuntime' );
+	var timeZone = 				document.querySelector('input[name="timeZone"]:checked');
 
 	var settings = {};
 	settings.fanDelay = fanDelay.value;
 	settings.compressorMaxRuntime = compressorMaxRuntime.value;
 	settings.compressorOffDelay = compressorOffDelay.value;
+	settings.timeZone =  tzMap[ timeZone.value ];
 	
 	var mySettings = {};
 	mySettings.settings = settings;
@@ -505,19 +521,32 @@ function showSlides(n) {
 						</div>
 						<div class="text">Enter the number of minutes that the compressor is allowed to run before force shutoff.</div>
 					</div>
+
+					<div class="mySlides">
+						<div class="cardSize">
+							<label for="timeZone">Timezone:</label><br>
+							<input type="radio" name="timeZone" value="ePST"><label>Pacific</label><br>
+							<input type="radio" name="timeZone" value="eMST"><label>Mountian</label><br>
+							<input type="radio" name="timeZone" value="eCST"><label>Central</label><br>
+							<input type="radio" name="timeZone" value="eEST"><label>Eastern</label><br>
+						</div>
+						<br><br><br>
+						<div class="text">Select the US timezone for this location</div>
+					</div>
 			
 					<!-- Next and previous buttons -->
 					<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
 					<a class="next" onclick="plusSlides(1)">&#10095;</a>
 					<div id="star" class="sprite starSprite"></div>
 				</div>
-				<br><br><br><br><br><br>
+				<br><br><br><br><br><br><br><br><br>
 			
 				<!-- The dots/circles -->
 				<div style="text-align:center">
 					<span class="dot" onclick="currentSlide(1)"></span>
 					<span class="dot" onclick="currentSlide(2)"></span>
 					<span class="dot" onclick="currentSlide(3)"></span>
+					<span class="dot" onclick="currentSlide(4)"></span>
 				</div>
 			</div>
 

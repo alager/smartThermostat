@@ -21,13 +21,29 @@ MyThermostat::MyThermostat( )
 {
 	// read in the eeprom settings
 	eepromInit();
+
+	// time zone string array
+	// must be in the same order as timezone_e
+	timeZone[0] = "America/Los_Angeles";
+	timeZone[1] = "America/Denver";
+	timeZone[2] = "America/Chicago";
+	timeZone[3] = "America/New_York";
 }
+
 
 MyThermostat::MyThermostat( mode_e mode )
 {
 	int addr = 0;
+
 	// read in the eeprom settings
 	eepromInit();
+
+	// time zone string array
+	// must be in the same order as timezone_e
+	timeZone[0] = "America/Los_Angeles";
+	timeZone[1] = "America/Denver";
+	timeZone[2] = "America/Chicago";
+	timeZone[3] = "America/New_York";
 
 	eepromData.mode = mode;
 	EEPROM.put( addr, eepromData );
@@ -47,12 +63,12 @@ void MyThermostat::init()
 	unsigned status;
     status = bme.begin( BME280_i2caddr );  
     if (!status) {
-        Serial.println("Could not find a valid BME280 sensor, check wiring, address, sensor ID!");
-        Serial.print("SensorID was: 0x"); Serial.println(bme.sensorID(),16);
-        Serial.print("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n");
-        Serial.print("   ID of 0x56-0x58 represents a BMP 280,\n");
-        Serial.print("        ID of 0x60 represents a BME 280.\n");
-        Serial.print("        ID of 0x61 represents a BME 680.\n");
+        Serial.println(F("Could not find a valid BME280 sensor, check wiring, address, sensor ID!"));
+        Serial.print(F("SensorID was: 0x")); Serial.println(bme.sensorID(),16);
+        Serial.print(F("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n"));
+        Serial.print(F("   ID of 0x56-0x58 represents a BMP 280,\n"));
+        Serial.print(F("        ID of 0x60 represents a BME 280.\n"));
+        Serial.print(F("        ID of 0x61 represents a BME 680.\n"));
         while (1) delay(10);
     }
     
@@ -66,10 +82,10 @@ void MyThermostat::init()
 		);
 	// suggested rate is 1/60Hz (1m)
 
-    Serial.println("\n\n-- BME280 connected on address 0x76 --");
+    Serial.println(F("\n\n-- BME280 connected on address 0x76 --"));
 
 	// configure GPIO
-	Serial.println("\n\n-- Configuring GPIO --");
+	Serial.println(F("\n\n-- Configuring GPIO --"));
 	pinMode( GPIO_FAN, OUTPUT );
 	pinMode( GPIO_COOLING, OUTPUT );
 	pinMode( GPIO_HEATING, OUTPUT );
@@ -581,6 +597,17 @@ void MyThermostat::settings_setCompressorMaxRuntime( unsigned short compressorMa
 }
 
 
+void MyThermostat::timeZone_set( timezone_e tz )
+{
+	eepromData.localTimeZone = tz;
+}
+
+timezone_e MyThermostat::timeZone_get( void )
+{
+	return eepromData.localTimeZone;
+}
+
+
 // return true if the cookie is valid
 // otherwise return false
 bool MyThermostat::eepromCookieIsValid( void )
@@ -605,6 +632,8 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.fanDelay =			120;		// 2 minutes in seconds
 	eepromData.compressorOffDelay =	300;		// 5 minutes in seconds		
 	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
+
+	eepromData.localTimeZone = eCST;			// Central time is the default
 
 	EEPROM.put( addr, eepromData );
 	EEPROM.commit();

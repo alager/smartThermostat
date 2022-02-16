@@ -17,8 +17,11 @@
 #include <ESP8266mDNS.h>
 #include <ezTime.h>
 #include <ArduinoJson.h>
+#include <Streaming.h>
 
 #include "myThermostat.h"
+#include "main.h"
+
 
 // local prototypes
 void sendTelemetry( void );
@@ -140,6 +143,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			settings[ "fanDelay" ] = 			 someTherm->settings_getFanDelay();
 			settings[ "compressorOffDelay" ]  =	 someTherm->settings_getCompressorOffDelay();
 			settings[ "compressorMaxRuntime" ] = someTherm->settings_getCompressorMaxRuntime();
+			settings[ "timeZone" ] =			 someTherm->timeZone_get();
 		
 			//serializeJsonPretty( doc, Serial );
 
@@ -163,18 +167,37 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				return;
 			}
 
-			if( json["settings"]["fanDelay"] == 0 
-			 && json["settings"]["compressorOffDelay"] == 0
-			 && json["settings"]["compressorMaxRuntime"] == 0 )
+			JsonObject settings = json["settings"];
+			if( settings["fanDelay"] == 0 
+			 && settings["compressorOffDelay"] == 0
+			 && settings["compressorMaxRuntime"] == 0 )
 			 {
 				 // bad stuff happened on the network...keep our existing values
 			 }
 			 else
 			 {
-				//unsigned short fanDelay = json["settings"]["fanDelay"];
-				someTherm->settings_setFanDelay( json["settings"]["fanDelay"] );
-				someTherm->settings_setCompressorOffDelay( json["settings"]["compressorOffDelay"] );
-				someTherm->settings_setCompressorMaxRuntime( json["settings"]["compressorMaxRuntime"] );
+				
+				someTherm->settings_setFanDelay( settings[ "fanDelay" ] );
+				someTherm->settings_setCompressorOffDelay( settings[ "compressorOffDelay" ] );
+				someTherm->settings_setCompressorMaxRuntime( settings[ "compressorMaxRuntime" ] );
+				
+				uint16_t newTz = settings[ "timeZone" ];
+				someTherm->timeZone_set( (timezone_e)newTz );
+
+				Serial << F("json value: ") << newTz << mendl;
+				// Serial.println( newTz );
+
+				Serial << F("Setting new time zone to: ") << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
+				// Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+
+				// the timezone possible just changed, so update the ezTime object
+				myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+
+				// myTZ.setLocation( F("America/Chicago") );
+				waitForSync();
+
+				Serial << F("Setting new time zone DONE") << mendl;
+				Serial <<  myTZ.dateTime()  << mendl;
 			 }
 		}
 	}
@@ -247,7 +270,7 @@ void setup()
 		// Start mDNS with name esp8266
 		if( MDNS.begin( "therm1" ) )
 		{ 
-			Serial.println(F("MDNS started"));
+			Serial << (F("MDNS started")) << mendl;
 		}
 	}
 
@@ -255,30 +278,29 @@ void setup()
 	MDNS.addService("http", "TCP", 80);
 
 	// debug ezTime
-	//setDebug(INFO);
+	setDebug(INFO);
 
 	// wait for ezTime to sync
-	Serial.println(F( "Syncing with NTP" ) );
+	Serial << (F( "Syncing with NTP" ) ) << mendl;
 	waitForSync();
+
 
 	// Provide official timezone names
 	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	myTZ.setLocation( F( "America/Chicago" ));
-	Serial.print( F( "Central Time:     " ));
+	Serial <<  F("our Timezone: " ) << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
+	// Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+	// myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+
+	myTZ.setLocation( "America/Chicago" );
+	Serial << F("Central Time:     ") << mendl;
 	Serial.println( myTZ.dateTime() );
 
 
 	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		// request->send(LittleFS, "/index.html", String(), false, processor);
 		request->send( LittleFS, "/index.html", "text/html" );
 	});
-
-	// server.on("/page2.html", HTTP_GET, [](AsyncWebServerRequest *request)
-	// {
-	// 	request->send(LittleFS, "/page2.html", String(), false, processor);
-	// });
 
 	// Route to load style.css file
 	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)

@@ -23,8 +23,16 @@ typedef enum
 	MODE_HEATING
 } mode_e;
 
+// simplified list of time zones
+typedef enum
+{
+	ePST,
+	eMST,
+	eCST,
+	eEST
+} timezone_e;
 
-#define MAGIC_COOKIE	( 0xdebb1e03 )
+#define MAGIC_COOKIE	( 0xdebb1e04 )
 typedef struct 
 {
 	unsigned long	cookie;			// magic cookie for versioning
@@ -35,6 +43,8 @@ typedef struct
 	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor turns off
 	unsigned short	compressorOffDelay;		// how long the compressor must stay off once turned off
 	unsigned short	compressorMaxRuntime;	// how long the compressor can run before being forced off
+
+	timezone_e		localTimeZone;			// what time zone we are in
 } myEEprom_t;
 
 
@@ -94,6 +104,11 @@ class MyThermostat
 		void settings_setFanDelay( unsigned short );
 		void settings_setCompressorOffDelay( unsigned short );
 		void settings_setCompressorMaxRuntime( unsigned short );
+
+		void timeZone_set( timezone_e tz );
+		timezone_e timeZone_get( void );
+
+		std::string timeZone [4];
 		
 	private:
 		mode_e 			currentMode;
