@@ -32,7 +32,7 @@ void sendCurrentMode( void );
 
 // variables
 MyThermostat *someTherm;
-MyThermostat someThermObj;
+// MyThermostat someThermObj;
 
 // network credentials
 const char* ssid = "NestRouter1";
@@ -180,21 +180,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				someTherm->settings_setCompressorMaxRuntime( settings[ "compressorMaxRuntime" ] );
 				
 				uint16_t newTz = settings[ "timeZone" ];
-				// someTherm->timeZone_set( (timezone_e)newTz );
 
+				// store the new timezone value
+				someTherm->timeZone_set( (timezone_e)newTz );
+
+				// debug console output
 				Serial << F("json value: ") << newTz << mendl;
-				// Serial.println( newTz );
-
-				// Serial << F("Setting new time zone to: ") << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
+				// Serial << F("Setting new time zone to: ") << someTherm->mySched.timeZone[ someTherm->mySched.tz ].c_str() << mendl;
 
 				// the timezone possible just changed, so update the ezTime object
-				// myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+				// someTherm->mySched.myTZ.setLocation( someTherm->mySched.timeZone[ someTherm->mySched.tz ].c_str() );
 
 				// myTZ.setLocation( F("America/Chicago") );
 				// waitForSync();
 
 				Serial << F("Setting new time zone DONE") << mendl;
-				// Serial <<  myTZ.dateTime()  << mendl;
 			 }
 		}
 	}
@@ -234,7 +234,9 @@ void setup()
     Serial.begin(115200);
 
 	// MyThermostat someThermObj;
-	someTherm = &someThermObj;
+	someTherm = new MyThermostat;
+
+	// someTherm = &someThermObj;
 	someTherm->init();
 
 	// debug, set the mode to cooling

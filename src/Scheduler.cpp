@@ -11,39 +11,38 @@ Scheduler::Scheduler()
 {
 	// time zone string array
 	// must be in the same order as timezone_e
-	timeZone[1] = "America/Los_Angeles";
-	timeZone[2] = "America/Denver";
-	timeZone[3] = "America/Chicago";
-	timeZone[4] = "America/New_York";
-
-
-	// debug ezTime
-	setDebug(INFO);
-
-	// wait for ezTime to sync
-	Serial << (F( "Syncing with NTP" ) ) << mendl;
-	waitForSync();
-
-
-	// Provide official timezone names
-	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	Serial <<  F("our Timezone: " ) << timeZone[ tz ].c_str() << mendl;
-	
-
-	// // myTZ.setLocation( "America/Chicago" );
-	// // Serial << F("Central Time:     ") << mendl;
-	// // Serial.println( myTZ.dateTime() );
-
+	timeZoneStr[0] = std::string();	//empty string
+	timeZoneStr[1] = "America/Los_Angeles";
+	timeZoneStr[2] = "America/Denver";
+	timeZoneStr[3] = "America/Chicago";
+	timeZoneStr[4] = "America/New_York";
 }
 
 void Scheduler::tick( void )
 {
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
-	events();
+	//events();
 }
 
-void Scheduler::init( timezone_e tz )
+void Scheduler::init( timezone_e new_tz )
 {
-	this->tz = tz;
+	this->tz = new_tz;
+
+	// debug ezTime
+	setDebug(INFO);
+
+	Serial << (F( "Syncing NTP" ) ) << mendl;
+	
+	// wait for ezTime to sync
+	waitForSync();
+
+	// Provide official timezone names
+	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	Serial <<  F("our Timezone: " ) << timeZoneStr[ tz ].c_str() << mendl;
+	
+
+	myTZ.setLocation( timeZoneStr[ tz ].c_str() );
+	Serial << F("Central Time:     ") << myTZ.dateTime() << mendl;
+
 }

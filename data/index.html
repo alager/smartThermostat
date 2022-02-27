@@ -43,7 +43,7 @@ var dsplyTime;
 const gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
 var sockTimer=null;
-const wsRetry = 10; // number of seconds to wait for retry
+const wsRetry = 30; // number of seconds to wait for retry
 
 function initWebSocket() 
 {
@@ -240,10 +240,11 @@ function getObjKey(obj, value)
 }
 
 var tzMap = {
-	ePST: 0,
-	eMST: 1,
-	eCST: 2,
-	eEST: 3
+	none: 0,
+	ePST: 1,
+	eMST: 2,
+	eCST: 3,
+	eEST: 4
 }
 // get all the settings and send them back to the server
 function saveSettings()

@@ -3,19 +3,12 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <string>
-using namespace std;
 
 #include <Scheduler.h>
 
 #include <myThermostat.h>
 
 uint8_t BME280_i2caddr = 0x76;
-
-// create the bme object for I2C (SPI takes parameters)
-Adafruit_BME280 bme; // I2C
-
-
-
 
 
 // create the initial data structures
@@ -25,7 +18,7 @@ MyThermostat::MyThermostat( )
 	// read in the eeprom settings
 	eepromInit();
 
-	// mySched.init( eepromData.localTimeZone );
+	//mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -39,10 +32,12 @@ MyThermostat::MyThermostat( mode_e mode )
 	eepromData.mode = mode;
 	EEPROM.put( addr, eepromData );
 
-	// mySched.init( eepromData.localTimeZone );
+	//mySched.init( eepromData.localTimeZone );
 }
 
 
+// init function must be called after Serial has been instantiated
+// in setup() is a good place
 void MyThermostat::init()
 {
 	// default settings
@@ -159,7 +154,7 @@ float MyThermostat::getTemperature_f()
 // get the temperature and convert it to a string
 std::string MyThermostat::getTemperature()
 {
-	return to_string( getTemperature_f() );
+	return std::to_string( getTemperature_f() );
 }
 
 
@@ -180,7 +175,7 @@ float MyThermostat::getPressure_f()
 // return a string of the pressure
 std::string MyThermostat::getPressure()
 {
-	return to_string( getPressure_f() );
+	return std::to_string( getPressure_f() );
 }
 
 
@@ -227,7 +222,7 @@ float MyThermostat::getHumidity_f()
 
 std::string MyThermostat::getHumidity()
 {
-	return to_string( getHumidity_f() );
+	return std::to_string( getHumidity_f() );
 }
 
 
@@ -550,16 +545,6 @@ void MyThermostat::eepromInit( void )
 		// write the initial eeprom values
 		eepromWriteFirstValues();
 	}
-
-	// the put command writes local data back to 
-	// the eeprom cache, but it isn't commited to flash yet 
-	//  EEPROM.put( addr, eepromData );
-
-	// actually write the content of byte-array cache to
-	// hardware flash.  flash write occurs if and only if one or more byte
-	// in byte-array cache has been changed, but if so, ALL sizeof(eepromData) bytes are 
-	// written to flash
-	// EEPROM.commit();  
 }
 
 
@@ -626,10 +611,17 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.compressorOffDelay =	300;		// 5 minutes in seconds		
 	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
 
-	// eepromData.localTimeZone = eCST;			// Central time is the default
+	eepromData.localTimeZone = eCST;			// Central time is our default
 
-	EEPROM.put( addr, eepromData );
-	EEPROM.commit();
+	// the put command writes local data back to 
+	// the eeprom cache, but it isn't commited to flash yet 
+	 EEPROM.put( addr, eepromData );
+
+	// actually write the content of byte-array cache to
+	// hardware flash.  flash write occurs if and only if one or more byte
+	// in byte-array cache has been changed, but if so, ALL sizeof(eepromData) bytes are 
+	// written to flash
+	EEPROM.commit();  
 }
 
 

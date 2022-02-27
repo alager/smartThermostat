@@ -22,10 +22,10 @@ typedef enum
 	MODE_OFF,
 	MODE_COOLING,
 	MODE_HEATING
-} mode_e;
+} __attribute__((packed)) mode_e;
 
 
-#define MAGIC_COOKIE	( 0xdebb1e04 )
+#define MAGIC_COOKIE	( 0xdebb1e05 )
 typedef struct 
 {
 	unsigned long	cookie;			// magic cookie for versioning
@@ -38,7 +38,7 @@ typedef struct
 	unsigned short	compressorMaxRuntime;	// how long the compressor can run before being forced off
 
 	timezone_e		localTimeZone;			// what time zone we are in
-} myEEprom_t;
+} __attribute__((packed)) myEEprom_t;
 
 
 
@@ -102,7 +102,7 @@ class MyThermostat
 		void timeZone_set( timezone_e tz );
 		timezone_e timeZone_get( void );
 
-		
+		Scheduler 		mySched;
 		
 	private:
 		mode_e 			currentMode;
@@ -113,8 +113,10 @@ class MyThermostat
 		bool 			safeToRunCompressor;
 
 		myEEprom_t		eepromData;
-		Scheduler 		mySched;
+		
 
+		// create the bme object for I2C (SPI takes parameters)
+		Adafruit_BME280 bme; // I2C
 
 		int digitalReadOutputPin(uint8_t pin);
 
