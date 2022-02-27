@@ -15,11 +15,11 @@
 #include <Adafruit_BME280.h>
 #include <AsyncElegantOTA.h>
 #include <ESP8266mDNS.h>
-#include <ezTime.h>
 #include <ArduinoJson.h>
 #include <Streaming.h>
 
 #include "myThermostat.h"
+
 #include "main.h"
 
 
@@ -28,7 +28,6 @@ void sendTelemetry( void );
 void preModeChange( void );
 void sendDelayStatus( bool status );
 void sendCurrentMode( void );
-
 
 
 // variables
@@ -49,8 +48,7 @@ AsyncWebServer server(80);
 // create a web socket object
 AsyncWebSocket webSock("/ws");
 
-// create a time & timezone object
-Timezone myTZ;
+
 
 // Generally, you should use "unsigned long" for variables that hold time
 // The value will quickly become too large for an int to store
@@ -94,7 +92,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			// Serial.print( "UP theTemp: " );
 			// Serial.println( theTemp );
 
-			replyStr = to_string( theTemp );
+			replyStr = std::to_string( theTemp );
 			// send the new temperature setting to the websocket clients
 			notifyClients( "{\"tempSet\":" + replyStr + "}" );
 		}
@@ -105,7 +103,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			theTemp -= 0.5f;
 			someTherm->setTemperatureSetting( theTemp );
 
-			replyStr = to_string( theTemp );
+			replyStr = std::to_string( theTemp );
 			// send the new temperature setting to the websocket clients
 			notifyClients( "{\"tempSet\":" + replyStr + "}" );
 		}
@@ -126,7 +124,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			someTherm->setMode( mode );
 
 			// send the new temperature setting to the websocket clients
-			replyStr = to_string( mode );
+			replyStr = std::to_string( mode );
 			notifyClients( "{\"modeSet\":" + replyStr + "}" );
 
 			sendTelemetry();
@@ -143,7 +141,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			settings[ "fanDelay" ] = 			 someTherm->settings_getFanDelay();
 			settings[ "compressorOffDelay" ]  =	 someTherm->settings_getCompressorOffDelay();
 			settings[ "compressorMaxRuntime" ] = someTherm->settings_getCompressorMaxRuntime();
-			settings[ "timeZone" ] =			 someTherm->timeZone_get();
+			// settings[ "timeZone" ] =			 someTherm->timeZone_get();
 		
 			//serializeJsonPretty( doc, Serial );
 
@@ -182,22 +180,21 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				someTherm->settings_setCompressorMaxRuntime( settings[ "compressorMaxRuntime" ] );
 				
 				uint16_t newTz = settings[ "timeZone" ];
-				someTherm->timeZone_set( (timezone_e)newTz );
+				// someTherm->timeZone_set( (timezone_e)newTz );
 
 				Serial << F("json value: ") << newTz << mendl;
 				// Serial.println( newTz );
 
-				Serial << F("Setting new time zone to: ") << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
-				// Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+				// Serial << F("Setting new time zone to: ") << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
 
 				// the timezone possible just changed, so update the ezTime object
-				myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+				// myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
 
 				// myTZ.setLocation( F("America/Chicago") );
-				waitForSync();
+				// waitForSync();
 
 				Serial << F("Setting new time zone DONE") << mendl;
-				Serial <<  myTZ.dateTime()  << mendl;
+				// Serial <<  myTZ.dateTime()  << mendl;
 			 }
 		}
 	}
@@ -277,23 +274,23 @@ void setup()
 	// add this for mDNS to respond
 	MDNS.addService("http", "TCP", 80);
 
-	// debug ezTime
-	setDebug(INFO);
+	// // debug ezTime
+	// setDebug(INFO);
 
-	// wait for ezTime to sync
-	Serial << (F( "Syncing with NTP" ) ) << mendl;
-	waitForSync();
+	// // wait for ezTime to sync
+	// Serial << (F( "Syncing with NTP" ) ) << mendl;
+	// waitForSync();
 
 
-	// Provide official timezone names
-	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	Serial <<  F("our Timezone: " ) << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
-	// Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
-	// myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+	// // Provide official timezone names
+	// // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	// Serial <<  F("our Timezone: " ) << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
+	// // Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
+	// // myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
 
-	myTZ.setLocation( "America/Chicago" );
-	Serial << F("Central Time:     ") << mendl;
-	Serial.println( myTZ.dateTime() );
+	// myTZ.setLocation( "America/Chicago" );
+	// Serial << F("Central Time:     ") << mendl;
+	// Serial.println( myTZ.dateTime() );
 
 
 	// Route for root / web page
@@ -348,7 +345,7 @@ void loop()
 		someTherm->updateMeasurements();
 
 		// run thermostat background logic and timers
-		someTherm->runTick();
+		someTherm->runSlowTick();
 
 		// update websocket data pipe
 		sendTelemetry();
@@ -425,7 +422,7 @@ void loop()
 	
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
-	events();
+	someTherm->loopTick();
 }
 
 
@@ -443,7 +440,7 @@ void sendTelemetry( void )
 	telemetry[ "tempAvg" ] =		someTherm->getTemperature_f();
 	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
-	telemetry[ "time" ] =			myTZ.dateTime( "l, g:i:s A" );
+	// telemetry[ "time" ] =			myTZ.dateTime( "l, g:i:s A" );
 
 	// Generate the prettified JSON and send it to the Serial port.
 	//serializeJsonPretty(doc, Serial);
@@ -483,7 +480,7 @@ void sendCurrentMode( void )
 {
 	std::string currentState;
 	currentState = "{\"currentMode\":";
-	currentState +=  to_string( someTherm->currentState() );
+	currentState +=  std::to_string( someTherm->currentState() );
 	currentState += "}";
 
 	// Serial.println( currentState.c_str() );

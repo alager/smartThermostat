@@ -5,13 +5,16 @@
 #include <string>
 using namespace std;
 
+#include <Scheduler.h>
 
-#include "myThermostat.h"
+#include <myThermostat.h>
 
 uint8_t BME280_i2caddr = 0x76;
 
 // create the bme object for I2C (SPI takes parameters)
 Adafruit_BME280 bme; // I2C
+
+
 
 
 
@@ -22,12 +25,7 @@ MyThermostat::MyThermostat( )
 	// read in the eeprom settings
 	eepromInit();
 
-	// time zone string array
-	// must be in the same order as timezone_e
-	timeZone[0] = "America/Los_Angeles";
-	timeZone[1] = "America/Denver";
-	timeZone[2] = "America/Chicago";
-	timeZone[3] = "America/New_York";
+	// mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -38,21 +36,11 @@ MyThermostat::MyThermostat( mode_e mode )
 	// read in the eeprom settings
 	eepromInit();
 
-	// time zone string array
-	// must be in the same order as timezone_e
-	timeZone[0] = "America/Los_Angeles";
-	timeZone[1] = "America/Denver";
-	timeZone[2] = "America/Chicago";
-	timeZone[3] = "America/New_York";
-
 	eepromData.mode = mode;
 	EEPROM.put( addr, eepromData );
+
+	// mySched.init( eepromData.localTimeZone );
 }
-
-// destructor does nothing right now
-MyThermostat::~MyThermostat( )
-{}
-
 
 
 void MyThermostat::init()
@@ -237,7 +225,7 @@ float MyThermostat::getHumidity_f()
 }
 
 
-string MyThermostat::getHumidity()
+std::string MyThermostat::getHumidity()
 {
 	return to_string( getHumidity_f() );
 }
@@ -281,7 +269,7 @@ void MyThermostat::updateMeasurements( void )
 
 
 // run background logic and timers
-void MyThermostat::runTick( void )
+void MyThermostat::runSlowTick( void )
 {
 	// decrement or clear the run once flag, so the fan can be set to run again
 	decrementFanRunTime();
@@ -295,6 +283,11 @@ void MyThermostat::runTick( void )
 
 	if( getCompressorOffTime() == 0 )
 		setSafeToRunCompressor( true );
+}
+
+void MyThermostat::loopTick( void )
+{
+	// mySched.tick();
 }
 
 
@@ -633,7 +626,7 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.compressorOffDelay =	300;		// 5 minutes in seconds		
 	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
 
-	eepromData.localTimeZone = eCST;			// Central time is the default
+	// eepromData.localTimeZone = eCST;			// Central time is the default
 
 	EEPROM.put( addr, eepromData );
 	EEPROM.commit();

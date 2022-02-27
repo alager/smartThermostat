@@ -4,33 +4,30 @@
 #include <ezTime.h>
 #include <Streaming.h>
 
-#include <scheduler.h>
-
-	// create a time & timezone object
-		// Timezone myTZ;
+#include <Scheduler.h>
 
 
 Scheduler::Scheduler()
 {
-	// // time zone string array
-	// // must be in the same order as timezone_e
-	// timeZone[1] = "America/Los_Angeles";
-	// timeZone[2] = "America/Denver";
-	// timeZone[3] = "America/Chicago";
-	// timeZone[4] = "America/New_York";
+	// time zone string array
+	// must be in the same order as timezone_e
+	timeZone[1] = "America/Los_Angeles";
+	timeZone[2] = "America/Denver";
+	timeZone[3] = "America/Chicago";
+	timeZone[4] = "America/New_York";
 
 
-	// // debug ezTime
-	// setDebug(INFO);
+	// debug ezTime
+	setDebug(INFO);
 
-	// // wait for ezTime to sync
-	// Serial << (F( "Syncing with NTP" ) ) << mendl;
-	// waitForSync();
+	// wait for ezTime to sync
+	Serial << (F( "Syncing with NTP" ) ) << mendl;
+	waitForSync();
 
 
-	// // Provide official timezone names
-	// // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	// Serial <<  F("our Timezone: " ) << timeZone[ tz ].c_str() << mendl;
+	// Provide official timezone names
+	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	Serial <<  F("our Timezone: " ) << timeZone[ tz ].c_str() << mendl;
 	
 
 	// // myTZ.setLocation( "America/Chicago" );
@@ -48,5 +45,5 @@ void Scheduler::tick( void )
 
 void Scheduler::init( timezone_e tz )
 {
-
+	this->tz = tz;
 }

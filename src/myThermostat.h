@@ -5,7 +5,8 @@
 #include "Arduino.h"
 #include <string>
 #include <EEPROM.h>
-using namespace std;
+#include <Scheduler.h>
+
 
 #define GPIO_FAN 		(2)
 // #define GPIO_COOLING	(16)
@@ -23,14 +24,6 @@ typedef enum
 	MODE_HEATING
 } mode_e;
 
-// simplified list of time zones
-typedef enum
-{
-	ePST,
-	eMST,
-	eCST,
-	eEST
-} timezone_e;
 
 #define MAGIC_COOKIE	( 0xdebb1e04 )
 typedef struct 
@@ -54,21 +47,22 @@ class MyThermostat
 	public:
 		MyThermostat();
 		MyThermostat( mode_e mode );
-		~MyThermostat();
+
 		void init();
 		float getTempRaw();
 		float getTemperature_f();
-		string getTemperature();
+		std::string getTemperature();
 		float getHumidity_f();
-		string getHumidity();
+		std::string getHumidity();
 		float getPressure_f();
-		string getPressure();
+		std::string getPressure();
 
 		bool isMode( mode_e mode );
 		void setMode( mode_e mode );
 		mode_e getMode( void );
 		void updateMeasurements( void );
-		void runTick( void );
+		void runSlowTick( void );
+		void loopTick( void );
 
 		float getTemperatureSetting( void );
 		void setTemperatureSetting( float );
@@ -108,7 +102,7 @@ class MyThermostat
 		void timeZone_set( timezone_e tz );
 		timezone_e timeZone_get( void );
 
-		std::string timeZone [4];
+		
 		
 	private:
 		mode_e 			currentMode;
@@ -119,6 +113,7 @@ class MyThermostat
 		bool 			safeToRunCompressor;
 
 		myEEprom_t		eepromData;
+		Scheduler 		mySched;
 
 
 		int digitalReadOutputPin(uint8_t pin);

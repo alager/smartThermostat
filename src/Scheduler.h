@@ -15,27 +15,21 @@ typedef enum
 	eEST
 } timezone_e;
 
-
-
-
 class Scheduler
 {
 	public:
 		Scheduler();
-		~Scheduler();
 
 		void tick( void );
 		void init( timezone_e tz );
 
-
-
-		std::string timeZone [4];
+		std::string timeZone [5];
 
 		// create a time & timezone object
 		Timezone myTZ;
 
 	private:
+		timezone_e tz;
 };
-
 
  #endif
