@@ -23,24 +23,12 @@
 #include "main.h"
 
 
-// local prototypes
-void sendTelemetry( void );
-void preModeChange( void );
-void sendDelayStatus( bool status );
-void sendCurrentMode( void );
-
-
-// variables
+// global variables
 MyThermostat *someTherm;
-// MyThermostat someThermObj;
 
 // network credentials
 const char* ssid = "NestRouter1";
 const char* password = "This_isapassword9";
-
-// current temperature & humidity, updated in loop()
-// float t = 0.0;
-// float h = 0.0;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -49,19 +37,8 @@ AsyncWebServer server(80);
 AsyncWebSocket webSock("/ws");
 
 
-
-// Generally, you should use "unsigned long" for variables that hold time
-// The value will quickly become too large for an int to store
-unsigned long previousMillis = 0;    // will store last time DHT was updated
-
-// Updates readings every 10 seconds
-const unsigned long interval = 10000;
-
-#define SEALEVELPRESSURE_HPA (1013.25f)
-
 /////////////////////////////
 // code start
-// bool ledState = 0;
 
 void notifyClients( std::string data )
 {
@@ -141,7 +118,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			settings[ "fanDelay" ] = 			 someTherm->settings_getFanDelay();
 			settings[ "compressorOffDelay" ]  =	 someTherm->settings_getCompressorOffDelay();
 			settings[ "compressorMaxRuntime" ] = someTherm->settings_getCompressorMaxRuntime();
-			// settings[ "timeZone" ] =			 someTherm->timeZone_get();
+			settings[ "timeZone" ] =			 someTherm->timeZone_get();
 		
 			//serializeJsonPretty( doc, Serial );
 
@@ -276,55 +253,14 @@ void setup()
 	// add this for mDNS to respond
 	MDNS.addService("http", "TCP", 80);
 
-	// // debug ezTime
-	// setDebug(INFO);
+	// after the network is up, we can init the scheduler
+	// it needs networking for NTP first
+	someTherm->sched_init();
 
-	// // wait for ezTime to sync
-	// Serial << (F( "Syncing with NTP" ) ) << mendl;
-	// waitForSync();
+	// configure web server routes
+	configureRoutes();
 
-
-	// // Provide official timezone names
-	// // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	// Serial <<  F("our Timezone: " ) << someTherm->timeZone[ someTherm->timeZone_get() ].c_str() << mendl;
-	// // Serial.println( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
-	// // myTZ.setLocation( someTherm->timeZone[ someTherm->timeZone_get() ].c_str() );
-
-	// myTZ.setLocation( "America/Chicago" );
-	// Serial << F("Central Time:     ") << mendl;
-	// Serial.println( myTZ.dateTime() );
-
-
-	// Route for root / web page
-	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send( LittleFS, "/index.html", "text/html" );
-	});
-
-	// Route to load style.css file
-	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send(LittleFS, "/mario.css", "text/css");
-	});
-
-	// sen the sprites
-	server.on("/Mario_3_sprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send(LittleFS, "/Mario_3_sprites.jpg", "image/jpeg");
-	});
-
-	// send the fonts
-	server.on("/marioFont.woff", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send(LittleFS, "/marioFont.woff", "font/woff");
-	});
-
-	// deal with the favicon.ico
-	server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
-	{
-		request->send(LittleFS, "/favicon.ico", "image/x-image");
-	});
-
+	// configure web server web socket
 	initWebSocket();
 
 	// Start Elegant OTA
@@ -351,6 +287,10 @@ void loop()
 
 		// update websocket data pipe
 		sendTelemetry();
+
+		// run the ezTime task
+		// this will poll pool.ntp.org about every 30 minutes
+		someTherm->loopTick();
 		
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )
@@ -421,12 +361,41 @@ void loop()
 
 	// run the mDNS processor loop
 	MDNS.update();
-	
-	// run the ezTime task
-	// this will poll pool.ntp.org about every 30 minutes
-	someTherm->loopTick();
 }
 
+
+void configureRoutes( void )
+{
+	// Route for root / web page
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send( LittleFS, "/index.html", "text/html" );
+	});
+
+	// Route to load style.css file
+	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/mario.css", "text/css");
+	});
+
+	// sen the sprites
+	server.on("/Mario_3_sprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/Mario_3_sprites.jpg", "image/jpeg");
+	});
+
+	// send the fonts
+	server.on("/marioFont.woff", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/marioFont.woff", "font/woff");
+	});
+
+	// deal with the favicon.ico
+	server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, "/favicon.ico", "image/x-image");
+	});
+}
 
 void sendTelemetry( void )
 {
@@ -442,10 +411,10 @@ void sendTelemetry( void )
 	telemetry[ "tempAvg" ] =		someTherm->getTemperature_f();
 	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
-	// telemetry[ "time" ] =			myTZ.dateTime( "l, g:i:s A" );
+	telemetry[ "time" ] =			someTherm->timeZone_getTimeStr();
 
 	// Generate the prettified JSON and send it to the Serial port.
-	//serializeJsonPretty(doc, Serial);
+	// serializeJsonPretty(doc, Serial);
 
 	// put it into a buffer to send to the clients
 	serializeJson( doc, telemetryStr );

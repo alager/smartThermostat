@@ -3,6 +3,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <string>
+#include <Streaming.h>
 
 #include <Scheduler.h>
 
@@ -18,7 +19,7 @@ MyThermostat::MyThermostat( )
 	// read in the eeprom settings
 	eepromInit();
 
-	//mySched.init( eepromData.localTimeZone );
+	// mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -32,7 +33,7 @@ MyThermostat::MyThermostat( mode_e mode )
 	eepromData.mode = mode;
 	EEPROM.put( addr, eepromData );
 
-	//mySched.init( eepromData.localTimeZone );
+	// mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -46,13 +47,13 @@ void MyThermostat::init()
 	unsigned status;
     status = bme.begin( BME280_i2caddr );  
     if (!status) {
-        Serial.println(F("Could not find a valid BME280 sensor, check wiring, address, sensor ID!"));
-        Serial.print(F("SensorID was: 0x")); Serial.println(bme.sensorID(),16);
-        Serial.print(F("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085\n"));
-        Serial.print(F("   ID of 0x56-0x58 represents a BMP 280,\n"));
-        Serial.print(F("        ID of 0x60 represents a BME 280.\n"));
-        Serial.print(F("        ID of 0x61 represents a BME 680.\n"));
-        while (1) delay(10);
+        Serial << (F("Could not find a valid BME280 sensor, check wiring, address, sensor ID!")) << mendl;
+        Serial << (F("SensorID was: 0x")); Serial.println(bme.sensorID(),16);
+        Serial << (F("        ID of 0xFF probably means a bad address, a BMP 180 or BMP 085")) << mendl;
+        Serial << (F("   ID of 0x56-0x58 represents a BMP 280,")) << mendl;
+        Serial << (F("        ID of 0x60 represents a BME 280.")) << mendl;
+        Serial << (F("        ID of 0x61 represents a BME 680.")) << mendl;
+        while (1) { delay(10); }
     }
     
 	bme.setSampling(
@@ -65,10 +66,10 @@ void MyThermostat::init()
 		);
 	// suggested rate is 1/60Hz (1m)
 
-    Serial.println(F("\n\n-- BME280 connected on address 0x76 --"));
+    Serial << (F("\n-- BME280 connected on address 0x76 --")) << mendl;
 
 	// configure GPIO
-	Serial.println(F("\n\n-- Configuring GPIO --"));
+	Serial << (F("\n-- Configuring GPIO --")) << mendl;
 	pinMode( GPIO_FAN, OUTPUT );
 	pinMode( GPIO_COOLING, OUTPUT );
 	pinMode( GPIO_HEATING, OUTPUT );
@@ -585,6 +586,10 @@ timezone_e MyThermostat::timeZone_get( void )
 	return eepromData.localTimeZone;
 }
 
+std::string MyThermostat::timeZone_getTimeStr( void )
+{
+	return mySched.myTZ.dateTime( "l, g:i:s A" ).c_str();
+}
 
 // return true if the cookie is valid
 // otherwise return false
@@ -643,4 +648,10 @@ int MyThermostat::digitalReadOutputPin(uint8_t pin)
 		return LOW;
 
 	return (*portOutputRegister(port) & bit) ? HIGH : LOW;
+}
+
+
+void MyThermostat::sched_init( void )
+{
+	mySched.init( eepromData.localTimeZone );
 }
