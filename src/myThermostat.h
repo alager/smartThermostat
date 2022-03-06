@@ -28,16 +28,18 @@ typedef enum
 #define MAGIC_COOKIE	( 0xdebb1e05 )
 typedef struct 
 {
-	unsigned long	cookie;			// magic cookie for versioning
-	float			coolTemp;		// the cool temperature setting
-	float			hotTemp;		// the hot temperature setting
-	mode_e			mode;			// the last mode
+	unsigned long	cookie;					// magic cookie for versioning
+	float			coolTemp;				// the cool temperature setting
+	float			hotTemp;				// the hot temperature setting
+	mode_e			mode;					// the last mode
 
 	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor turns off
 	unsigned short	compressorOffDelay;		// how long the compressor must stay off once turned off
 	unsigned short	compressorMaxRuntime;	// how long the compressor can run before being forced off
 
 	timezone_e		localTimeZone;			// what time zone we are in
+
+	sched_t  		schedule[ 8 ];			// the schedule
 } __attribute__((packed)) myEEprom_t;
 
 
@@ -101,6 +103,10 @@ class MyThermostat
 
 		void timeZone_set( timezone_e tz );
 		timezone_e timeZone_get( void );
+		std::string timeZone_getTimeStr( void );
+
+
+		void sched_init( void );
 
 		Scheduler 		mySched;
 		

@@ -36,6 +36,7 @@ class Scheduler
 
 		void tick( void );
 		void init( timezone_e tz );
+		void loadSchedule( sched_t *sched );
 
 
 		std::string		timeZoneStr [5];		// array of strings that holds the time zone options
@@ -44,7 +45,7 @@ class Scheduler
 
 		// the array is 8 because 0 is not used due to the 
 		// pre-defined day values from ezTime.h
-		sched_t schedule[ 8 ];
+		sched_t  *schedule[ 8 ];
 
 	private:
 };

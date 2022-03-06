@@ -6,7 +6,7 @@
 
 #include <Scheduler.h>
 
-
+// constructor
 Scheduler::Scheduler()
 {
 	// time zone string array
@@ -18,12 +18,16 @@ Scheduler::Scheduler()
 	timeZoneStr[4] = "America/New_York";
 }
 
+
+// tick is run
 void Scheduler::tick( void )
 {
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
-	//events();
+	events();
 }
+
+
 
 void Scheduler::init( timezone_e new_tz )
 {
@@ -44,5 +48,12 @@ void Scheduler::init( timezone_e new_tz )
 
 	myTZ.setLocation( timeZoneStr[ tz ].c_str() );
 	Serial << F("Central Time:     ") << myTZ.dateTime() << mendl;
+
+
+}
+
+
+void Scheduler::loadSchedule( sched_t *sched )
+{
 
 }
