@@ -63,11 +63,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 		if (strcmp((char *)data, "temperatureUp") == 0)
 		{
 			float theTemp = someTherm->getTemperatureSetting();
+			if( theTemp == 0 || theTemp == -1 || isnan( theTemp ) )
+				theTemp = 65.0f;
+
 			theTemp += 0.5f;
 			someTherm->setTemperatureSetting( theTemp );
 			
-			// Serial.print( "UP theTemp: " );
-			// Serial.println( theTemp );
+			// Serial << F( "UP theTemp: " ) << theTemp << mendl;
 
 			replyStr = std::to_string( theTemp );
 			// send the new temperature setting to the websocket clients
@@ -77,6 +79,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 		if (strcmp((char *)data, "temperatureDown") == 0)
 		{
 			float theTemp = someTherm->getTemperatureSetting();
+			if( theTemp == 0 || theTemp == -1 || isnan( theTemp ) )
+				theTemp = 65.0f;
+
 			theTemp -= 0.5f;
 			someTherm->setTemperatureSetting( theTemp );
 

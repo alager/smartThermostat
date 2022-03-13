@@ -279,9 +279,14 @@ void MyThermostat::runSlowTick( void )
 
 void MyThermostat::loopTick( void )
 {
-	mySched.tick( ( SchedMode_e )this->getMode() );
+	// run the schedule tick, and see if there is a new value returned
+	newTemperature_t newTemp = mySched.tick( ( SchedMode_e )this->getMode() );
 
-	// setTemperatureSetting
+	// if there is a new value, then set the temperature
+	if( newTemp.newValue == true )
+	{
+		setTemperatureSetting( newTemp.temp );
+	}
 }
 
 
@@ -615,6 +620,21 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
 
 	eepromData.localTimeZone = eCST;			// Central time is our default
+
+	// defualt schedule is all off
+	for( int dow = 0; dow > 8; dow++ )
+	{
+		for( int idx = 0; idx > 4; idx++ )
+		{
+			// cooling schedule
+			eepromData.schedule[ dow ][ 0 ].setting[ idx ].time = 0;
+			eepromData.schedule[ dow ][ 0 ].setting[ idx ].temperature = 0;
+
+			// heating schedule
+			eepromData.schedule[ dow ][ 1 ].setting[ idx ].time = 0;
+			eepromData.schedule[ dow ][ 1 ].setting[ idx ].temperature = 0;
+		}
+	}
 
 	// the put command writes local data back to 
 	// the eeprom cache, but it isn't commited to flash yet 

@@ -23,7 +23,7 @@ Scheduler::Scheduler()
 newTemperature_t Scheduler::tick( SchedMode_e mode )
 {
 	time_t storedTime;
-	newTemperature_t newTemp = { .newValue = false, .temp = 0 };
+	newTemperature_t newTemp = { .newValue = false, .temp = 0.0f };
 
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
@@ -41,14 +41,16 @@ newTemperature_t Scheduler::tick( SchedMode_e mode )
 
 	// shift the mode down by 1, so that we don't have to waste 
 	// ram for an Off schedule.  Only heat and cool are in the arrays
-	mode = (SchedMode_e)( (int)mode - 1);
+	mode = (SchedMode_e)(mode - 1);
 
 	// check date & time against the stored schedule
 	for( uint idx = 0; idx < 4; idx++ )
 	{
 		storedTime = schedule[dow][mode].setting[idx].time;
-		
-		if( storedTime )
+		// Serial << "storedTime: " << storedTime << mendl;
+
+		//March 13, 2022 7:33:20 PM
+		if( storedTime > 1647200000 )
 		{
 			uint8_t hourStored = myTZ.hour();
 			uint8_t minuteStored = myTZ.minute();
@@ -60,7 +62,6 @@ newTemperature_t Scheduler::tick( SchedMode_e mode )
 					// we have a match!
 					newTemp.newValue = true;
 					newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
-
 					break;
 				}
 			}
