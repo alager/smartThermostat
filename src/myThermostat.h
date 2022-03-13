@@ -39,7 +39,7 @@ typedef struct
 
 	timezone_e		localTimeZone;			// what time zone we are in
 
-	sched_t  		schedule[ 8 ];			// the schedule
+	sched_t  		schedule[ 8 ][ 2 ];		// the 2 dimensions is for heat or cooling, the schedule, 1-8 is for dow 
 } __attribute__((packed)) myEEprom_t;
 
 

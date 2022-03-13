@@ -20,11 +20,55 @@ Scheduler::Scheduler()
 
 
 // tick is run
-void Scheduler::tick( void )
+newTemperature_t Scheduler::tick( SchedMode_e mode )
 {
+	time_t storedTime;
+	newTemperature_t newTemp = { .newValue = false, .temp = 0 };
+
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
 	events();
+
+	// get current day and time
+	uint8_t dow = myTZ.weekday();	// day of week, dow
+	uint8_t hour = myTZ.hour();
+	uint8_t minute = myTZ.minute();
+
+	// off, don't search or update the temperature
+	if( mode == eOff )
+		return newTemp;
+
+
+	// shift the mode down by 1, so that we don't have to waste 
+	// ram for an Off schedule.  Only heat and cool are in the arrays
+	mode = (SchedMode_e)( (int)mode - 1);
+
+	// check date & time against the stored schedule
+	for( uint idx = 0; idx < 4; idx++ )
+	{
+		storedTime = schedule[dow][mode].setting[idx].time;
+		
+		if( storedTime )
+		{
+			uint8_t hourStored = myTZ.hour();
+			uint8_t minuteStored = myTZ.minute();
+
+			if( hour == hourStored )
+			{
+				if( minute == minuteStored )
+				{
+					// we have a match!
+					newTemp.newValue = true;
+					newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
+
+					break;
+				}
+			}
+		}
+	}
+
+	// if there is a match then indicate that the temperature should be updated
+	return newTemp;
 }
 
 
@@ -53,7 +97,8 @@ void Scheduler::init( timezone_e new_tz )
 }
 
 
-void Scheduler::loadSchedule( sched_t *sched )
+// assume control over the schedule data
+void Scheduler::loadSchedule( schedAry_t *sched )
 {
-
+	this->schedule = sched;
 }

@@ -18,8 +18,6 @@ MyThermostat::MyThermostat( )
 {
 	// read in the eeprom settings
 	eepromInit();
-
-	// mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -32,8 +30,6 @@ MyThermostat::MyThermostat( mode_e mode )
 
 	eepromData.mode = mode;
 	EEPROM.put( addr, eepromData );
-
-	// mySched.init( eepromData.localTimeZone );
 }
 
 
@@ -283,7 +279,9 @@ void MyThermostat::runSlowTick( void )
 
 void MyThermostat::loopTick( void )
 {
-	// mySched.tick();
+	mySched.tick( ( SchedMode_e )this->getMode() );
+
+	// setTemperatureSetting
 }
 
 
@@ -653,5 +651,9 @@ int MyThermostat::digitalReadOutputPin(uint8_t pin)
 
 void MyThermostat::sched_init( void )
 {
+	// init the schedule with our timezone
 	mySched.init( eepromData.localTimeZone );
+
+	// 
+	mySched.loadSchedule( eepromData.schedule );
 }

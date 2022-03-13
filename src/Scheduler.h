@@ -17,26 +17,41 @@ typedef enum
 
 typedef struct
 {
-	uint32_t	time;
-	float		heatTemp;
-	float		coolTemp;
+	time_t		time;
+	float		temperature;
 } __attribute__((packed)) setTime_t;
+
 
 typedef struct
 {
-	setTime_t setTime[ 4 ];
+	setTime_t setting[ 4 ];
 } __attribute__((packed)) sched_t;
 
+typedef sched_t schedAry_t[ 2 ];
 
+
+typedef struct 
+{
+	bool	newValue;
+	float	temp;
+} newTemperature_t;
+
+
+typedef enum
+{
+	eOff,
+	eCool,
+	eHeat
+} SchedMode_e;
 
 class Scheduler
 {
 	public:
 		Scheduler();
 
-		void tick( void );
+		newTemperature_t tick( SchedMode_e mode );
 		void init( timezone_e tz );
-		void loadSchedule( sched_t *sched );
+		void loadSchedule( schedAry_t *sched );
 
 
 		std::string		timeZoneStr [5];		// array of strings that holds the time zone options
@@ -45,7 +60,7 @@ class Scheduler
 
 		// the array is 8 because 0 is not used due to the 
 		// pre-defined day values from ezTime.h
-		sched_t  *schedule[ 8 ];
+		schedAry_t  *schedule;
 
 	private:
 };
