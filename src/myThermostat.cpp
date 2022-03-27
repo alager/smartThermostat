@@ -39,6 +39,7 @@ void MyThermostat::init()
 {
 	// default settings
 	safeToRunCompressor = true;
+	setCompressorOffTime( eepromData.compressorOffDelay );
 
 	unsigned status;
     status = bme.begin( BME280_i2caddr );  
@@ -66,41 +67,15 @@ void MyThermostat::init()
 
 	// configure GPIO
 	Serial << (F("\n-- Configuring GPIO --")) << mendl;
-	pinMode( GPIO_FAN, OUTPUT );
-	pinMode( GPIO_COOLING, OUTPUT );
-	pinMode( GPIO_HEATING, OUTPUT );
-	pinMode( GPIO_EMGHEAT, OUTPUT );
+	digitalWrite( GPIO_FAN, LOW );
+	digitalWrite( GPIO_COMPRESSOR, LOW );
+	digitalWrite( GPIO_OB, LOW );
+	digitalWrite( GPIO_EMGHEAT, LOW );
 
-	// test GPIO
-	digitalWrite( GPIO_FAN, HIGH );
-	digitalWrite( GPIO_COOLING, HIGH );
-	digitalWrite( GPIO_HEATING, HIGH );
-	digitalWrite( GPIO_EMGHEAT, HIGH );
-	delay(500);
-	digitalWrite( GPIO_FAN, LOW );
-	digitalWrite( GPIO_COOLING, LOW );
-	digitalWrite( GPIO_HEATING, LOW );
-	digitalWrite( GPIO_EMGHEAT, LOW );
-	delay(500);
-	digitalWrite( GPIO_FAN, HIGH );
-	digitalWrite( GPIO_COOLING, HIGH );
-	digitalWrite( GPIO_HEATING, HIGH );
-	digitalWrite( GPIO_EMGHEAT, HIGH );
-	delay(500);
-	digitalWrite( GPIO_FAN, LOW );
-	digitalWrite( GPIO_COOLING, LOW );
-	digitalWrite( GPIO_HEATING, LOW );
-	digitalWrite( GPIO_EMGHEAT, LOW );
-	delay(500);
-	digitalWrite( GPIO_FAN, HIGH );
-	digitalWrite( GPIO_COOLING, HIGH );
-	digitalWrite( GPIO_HEATING, HIGH );
-	digitalWrite( GPIO_EMGHEAT, HIGH );
-	delay(500);
-	digitalWrite( GPIO_FAN, LOW );
-	digitalWrite( GPIO_COOLING, LOW );
-	digitalWrite( GPIO_HEATING, LOW );
-	digitalWrite( GPIO_EMGHEAT, LOW );
+	pinMode( GPIO_FAN, OUTPUT );
+	pinMode( GPIO_COMPRESSOR, OUTPUT );
+	pinMode( GPIO_OB, OUTPUT );
+	pinMode( GPIO_EMGHEAT, OUTPUT );
 }
 
 
@@ -266,8 +241,8 @@ void MyThermostat::runSlowTick( void )
 	// decrement or clear the run once flag, so the fan can be set to run again
 	decrementFanRunTime();
 
-	if( getFanRunTime() == 0 )
-		clearFanRunOnce();
+	// if( getFanRunTime() == 0 )
+	// 	clearFanRunOnce();
 
 
 	// decrement and 
@@ -277,6 +252,8 @@ void MyThermostat::runSlowTick( void )
 		setSafeToRunCompressor( true );
 }
 
+
+// this is the fast tick
 void MyThermostat::loopTick( void )
 {
 	// run the schedule tick, and see if there is a new value returned
@@ -343,6 +320,9 @@ void MyThermostat::setTemperatureSetting( float newTemp )
 // set to 0 to turn off
 void MyThermostat::setFanRunTime( unsigned long time )
 {
+	if( time < 10UL )
+		time = 10UL;
+
 	fanRunTime = time / 10;
 }
 
@@ -367,12 +347,14 @@ void MyThermostat::turnOffCooler( void )
 	if( !fanRunOnce )
 	{
 		fanRunOnce = true;
-		setFanRunTime( FIVE_MINUTES );
-		setCompressorOffTime( FIVE_MINUTES );
+		setFanRunTime( eepromData.fanDelay );
+		setCompressorOffTime( eepromData.compressorOffDelay );
 	}
 
 	// turn off the compressor
-	digitalWrite( GPIO_COOLING, LOW );
+	digitalWrite( GPIO_COMPRESSOR, LOW );
+	digitalWrite( GPIO_OB, LOW );
+
 
 	// shadow the mode based on GPIO
 	currentMode = MODE_OFF;
@@ -389,17 +371,14 @@ void MyThermostat::turnOffCooler( void )
 bool MyThermostat::turnOnCooler( void )
 {
 	// make sure that the heater is off
-	digitalWrite( GPIO_HEATING, LOW );
+	//digitalWrite( GPIO_OB, LOW );
 
 	if( isSafeToRunCompressor() )
 	{
-		// // set the flag to prevent short cycling
-		// setSafeToRunCompressor( false );
-		// setCompressorOffTime( FIVE_MINUTES );
-
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
-		digitalWrite( GPIO_COOLING, HIGH );
+		digitalWrite( GPIO_COMPRESSOR, HIGH );
+		digitalWrite( GPIO_OB, HIGH );
 
 		// shadow the mode based on GPIO
 		currentMode = MODE_COOLING;
@@ -418,12 +397,12 @@ void MyThermostat::turnOffHeater( void )
 	if( !fanRunOnce )
 	{
 		fanRunOnce = true;
-		setFanRunTime( FIVE_MINUTES );
-		setCompressorOffTime( FIVE_MINUTES );
+		setFanRunTime( eepromData.fanDelay );
+		setCompressorOffTime( eepromData.compressorOffDelay );
 	}
 
 	// turn off the compressor
-	digitalWrite( GPIO_HEATING, LOW );
+	digitalWrite( GPIO_COMPRESSOR, LOW );
 
 	// shadow the mode based on GPIO
 	currentMode = MODE_OFF;
@@ -439,17 +418,14 @@ void MyThermostat::turnOffHeater( void )
 bool MyThermostat::turnOnHeater( void )
 {
 	// make sure that the cooler is off
-	digitalWrite( GPIO_COOLING, LOW );
+	digitalWrite( GPIO_OB, LOW );
+
 
 	if( isSafeToRunCompressor() )
 	{
-		// // set the flag to prevent short cycling
-		// setSafeToRunCompressor( false );
-		// setCompressorOffTime( FIVE_MINUTES );
-
 		// the active state is cooling turn on the fan and compressor
 		digitalWrite( GPIO_FAN, HIGH );
-		digitalWrite( GPIO_HEATING, HIGH );
+		digitalWrite( GPIO_COMPRESSOR, HIGH );
 
 		// shadow the mode based on GPIO
 		currentMode = MODE_HEATING;
@@ -477,15 +453,15 @@ void MyThermostat::turnOffAll( void )
 	digitalWrite( GPIO_FAN, LOW );
 
 	// turn off the heating & cooling
-	digitalWrite( GPIO_HEATING, LOW );
-	digitalWrite( GPIO_COOLING, LOW );
+	digitalWrite( GPIO_OB, LOW );
+	digitalWrite( GPIO_COMPRESSOR, LOW );
 
 	// shadow the mode based on GPIO
 	currentMode = MODE_OFF;
 
 	// set the flag to prevent short cycling
 	setSafeToRunCompressor( false );
-	setCompressorOffTime( FIVE_MINUTES );
+	setCompressorOffTime( eepromData.compressorOffDelay );
 }
 
 
@@ -627,14 +603,25 @@ void MyThermostat::eepromWriteFirstValues( void )
 		for( int idx = 0; idx > 4; idx++ )
 		{
 			// cooling schedule
-			eepromData.schedule[ dow ][ 0 ].setting[ idx ].time = 0;
+			eepromData.schedule[ dow ][ 0 ].setting[ idx ].hour = 0;
+			eepromData.schedule[ dow ][ 0 ].setting[ idx ].minute = 0;
 			eepromData.schedule[ dow ][ 0 ].setting[ idx ].temperature = 0;
 
 			// heating schedule
-			eepromData.schedule[ dow ][ 1 ].setting[ idx ].time = 0;
+			eepromData.schedule[ dow ][ 1 ].setting[ idx ].hour = 0;
+			eepromData.schedule[ dow ][ 1 ].setting[ idx ].minute = 0;
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].temperature = 0;
 		}
 	}
+
+	// test heat schedule
+	//  (GMT): Monday, March 21, 2022 10:46:08 PM
+	// time must be in UTC. hour 9 in UTC is what we are after, don't care what timezone
+	// ezTime will compare the local hour to the stored hour value.
+	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].hour = 5;
+	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].minute = 10;
+	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].ampm = PM;
+	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].temperature = 82.3f;
 
 	// the put command writes local data back to 
 	// the eeprom cache, but it isn't commited to flash yet 
