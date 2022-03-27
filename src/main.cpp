@@ -300,7 +300,7 @@ void loop()
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )
 		{
-			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + 0.2f ))
+			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + 0.2f ) )
 			{
 				// turn on the cooler (if we can)
 				if( someTherm->turnOnCooler() )

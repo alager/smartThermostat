@@ -8,14 +8,11 @@
 #include <Scheduler.h>
 
 
-#define GPIO_FAN 		(2)
-// #define GPIO_COOLING	(16)
-#define GPIO_COOLING	(14)
-#define GPIO_HEATING	(12)
-#define GPIO_EMGHEAT	(13)
+#define GPIO_FAN 		(2)		/* G */
+#define GPIO_COMPRESSOR	(14)	/* Y */
+#define GPIO_OB	(12)			/* O/B */
+#define GPIO_EMGHEAT	(13)	
 
-// 5 minutse in second
-#define FIVE_MINUTES ( 30 )
 
 typedef enum
 {
@@ -33,7 +30,8 @@ typedef struct
 	float			hotTemp;				// the hot temperature setting
 	mode_e			mode;					// the last mode
 
-	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor turns off
+	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor 
+											// turns off ( our heat pump runs for an additional 60 seconds after fan is told to turn off )
 	unsigned short	compressorOffDelay;		// how long the compressor must stay off once turned off
 	unsigned short	compressorMaxRuntime;	// how long the compressor can run before being forced off
 
