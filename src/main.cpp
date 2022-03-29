@@ -248,10 +248,21 @@ void setup()
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
 	{
+		std::string networkName;
+		uint32_t chipID = ESP.getChipId();
+
+		// Serial << "ChiID: " ;
+		// Serial.println( ESP.getChipId(), HEX);
+		if( 0x4864FE == chipID )
+			networkName = "therm9";		// dev thermostat
+		else
+		if( 0x48B46D == chipID )
+			networkName = "therm1";
+		
 		// Start mDNS with name esp8266
-		if( MDNS.begin( "therm1" ) )
+		if( MDNS.begin( networkName.c_str() ) )
 		{ 
-			Serial << (F("MDNS started")) << mendl;
+			Serial << (F("MDNS started: ")) << networkName.c_str() << mendl;
 		}
 	}
 
