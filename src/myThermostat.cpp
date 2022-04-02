@@ -614,14 +614,12 @@ void MyThermostat::eepromWriteFirstValues( void )
 		}
 	}
 
-	// test heat schedule
-	//  (GMT): Monday, March 21, 2022 10:46:08 PM
-	// time must be in UTC. hour 9 in UTC is what we are after, don't care what timezone
+	// test heat schedule - it worked!
 	// ezTime will compare the local hour to the stored hour value.
-	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].hour = 5;
-	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].minute = 10;
-	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].ampm = PM;
-	eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].temperature = 82.3f;
+	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].hour = 5;
+	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].minute = 10;
+	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].ampm = PM;
+	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].temperature = 82.3f;
 
 	// the put command writes local data back to 
 	// the eeprom cache, but it isn't commited to flash yet 
