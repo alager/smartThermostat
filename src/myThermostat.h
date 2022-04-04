@@ -22,12 +22,13 @@ typedef enum
 } __attribute__((packed)) mode_e;
 
 
-#define MAGIC_COOKIE	( 0xdebb1e05 )
+#define MAGIC_COOKIE	( 0xdebb1e08 )
 typedef struct 
 {
 	unsigned long	cookie;					// magic cookie for versioning
 	float			coolTemp;				// the cool temperature setting
 	float			hotTemp;				// the hot temperature setting
+	float			hysteresis;				// the amount that we allow above or below the set temperature
 	mode_e			mode;					// the last mode
 
 	unsigned short	fanDelay;				// number of seconds the fan runs after the compressor 
@@ -66,6 +67,9 @@ class MyThermostat
 
 		float getTemperatureSetting( void );
 		void setTemperatureSetting( float );
+
+		void setTempHysteresis( float hys );
+		float getTempHysteresis( void );
 
 		void setFanRunTime( unsigned long );
 		unsigned long getFanRunTime( void );

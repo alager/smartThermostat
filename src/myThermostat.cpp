@@ -316,6 +316,18 @@ void MyThermostat::setTemperatureSetting( float newTemp )
 }
 
 
+void MyThermostat::setTempHysteresis( float hys )
+{
+	int addr = 0;
+	eepromData.hysteresis = hys;
+	EEPROM.put( addr, eepromData );
+}
+
+float MyThermostat::getTempHysteresis( void )
+{
+	return eepromData.hysteresis;
+}
+
 // set the fan run time in seconds (10 seconds minimum)
 // set to 0 to turn off
 void MyThermostat::setFanRunTime( unsigned long time )
@@ -589,6 +601,7 @@ void MyThermostat::eepromWriteFirstValues( void )
 	eepromData.cookie =		MAGIC_COOKIE;
 	eepromData.coolTemp =	75.0f;
 	eepromData.hotTemp =	66.5f;
+	eepromData.hysteresis =	0.2f;
 	eepromData.mode =		MODE_OFF;
 
 	eepromData.fanDelay =			120;		// 2 minutes in seconds
