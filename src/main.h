@@ -1,6 +1,8 @@
 #ifndef __MAIN_H__
  #define __MAIN_H__
 
+// The debug symbol controls the mDNS name and other serial outputs
+#define _DEBUG_
 
 // Generally, you should use "unsigned long" for variables that hold time
 // The value will quickly become too large for an int to store

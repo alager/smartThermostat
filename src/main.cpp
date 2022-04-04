@@ -222,24 +222,28 @@ void setup()
 	someTherm->init();
 
 	// debug, set the mode to cooling
-	Serial.print( F( "isMode: " ));
-	Serial.println( someTherm->getMode() );
-
+	#ifdef _DEBUG_
+	  Serial << ( F( "isMode: " )) << someTherm->getMode() << mendl;
+	#endif
 	
 	// Initialize SPIFFS
 	if(!LittleFS.begin())
 	{
-		Serial.println( F( "An Error has occurred while mounting LittleFS" ));
+		Serial << ( F( "An Error has occurred while mounting LittleFS" )) << mendl;
 		return;
 	}
 
 	// Connect to Wi-Fi
 	WiFi.begin(ssid, password);
-	Serial.println(F("Connecting to WiFi"));
+	#ifdef _DEBUG_
+	  Serial << (F("Connecting to WiFi")) << mendl;
+	#endif
 	while (WiFi.status() != WL_CONNECTED)
 	{
 		delay(1000);
-		Serial.println(".");
+		#ifdef _DEBUG_
+		  Serial.println(".");
+		#endif
 	}
 
 	// Print ESP8266 Local IP Address
@@ -248,22 +252,39 @@ void setup()
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
 	{
-		std::string networkName;
-		uint32_t chipID = ESP.getChipId();
-
+		
+#ifdef _DEBUG_
+		// Start mDNS with name esp8266
+		if( MDNS.begin( F("therm9") ) )
+		{ 
+			Serial << (F("MDNS started: therm9")) << mendl;
+		}
+		#else
+		// Start mDNS with name esp8266
+		if( MDNS.begin( F("therm1") ) )
+		{ 
+			Serial << (F("MDNS started: therm1")) << mendl;
+		}
+#endif
 		// Serial << "ChiID: " ;
 		// Serial.println( ESP.getChipId(), HEX);
-		if( 0x4864FE == chipID )
-			networkName = "therm9";		// dev thermostat
-		else
-		if( 0x48B46D == chipID )
-			networkName = "therm1";
-		
-		// Start mDNS with name esp8266
-		if( MDNS.begin( networkName.c_str() ) )
-		{ 
-			Serial << (F("MDNS started: ")) << networkName.c_str() << mendl;
-		}
+		// if( 0x4864FE == ESP.getChipId() )
+		// {
+		// 	// Start mDNS with name esp8266
+		// 	if( MDNS.begin( F("therm9") ) )
+		// 	{ 
+		// 		Serial << (F("MDNS started: therm9")) << mendl;
+		// 	}
+		// }
+		// else
+		// if( 0x48B46D == ESP.getChipId() )
+		// {
+			// Start mDNS with name esp8266
+			// if( MDNS.begin( F("therm1") ) )
+			// { 
+			// 	Serial << (F("MDNS started: therm1")) << mendl;
+			// }
+		// }		
 	}
 
 	// add this for mDNS to respond
@@ -311,7 +332,7 @@ void loop()
 		// thermostat logic
 		if( someTherm->isMode( MODE_COOLING ) )
 		{
-			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + 0.2f ) )
+			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + someTherm->getTempHysteresis() ) )
 			{
 				// turn on the cooler (if we can)
 				if( someTherm->turnOnCooler() )
@@ -336,7 +357,7 @@ void loop()
 		else
 		if( someTherm->isMode( MODE_HEATING ) )
 		{
-			if( someTherm->getTemperature_f() < ( someTherm->getTemperatureSetting() - 0.2f ) )
+			if( someTherm->getTemperature_f() < ( someTherm->getTemperatureSetting() - someTherm->getTempHysteresis() ) )
 			{
 				// turn on the heater (if we can)
 				if( someTherm->turnOnHeater() )
