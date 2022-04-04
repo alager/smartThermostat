@@ -15,9 +15,17 @@ typedef enum
 	eEST
 } __attribute__((packed)) timezone_e;
 
+typedef enum
+{
+	AM,
+	PM
+} __attribute__((packed)) ampm_e;
+
 typedef struct
 {
-	time_t		time;
+	uint8_t		hour;
+	uint8_t		minute;
+	ampm_e		ampm;
 	float		temperature;
 } __attribute__((packed)) setTime_t;
 

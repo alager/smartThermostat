@@ -22,47 +22,49 @@ Scheduler::Scheduler()
 // tick is run
 newTemperature_t Scheduler::tick( SchedMode_e mode )
 {
-	time_t storedTime;
+	setTime_t storedTime;
 	newTemperature_t newTemp = { .newValue = false, .temp = 0.0f };
 
 	// run the ezTime task
 	// this will poll pool.ntp.org about every 30 minutes
 	events();
 
-	// get current day and time
-	uint8_t dow = myTZ.weekday();	// day of week, dow
-	uint8_t hour = myTZ.hour();
-	uint8_t minute = myTZ.minute();
-
+	// day of week, dow
+	uint8_t dow = myTZ.weekday();	
+	
 	// off, don't search or update the temperature
 	if( mode == eOff )
 		return newTemp;
-
 
 	// shift the mode down by 1, so that we don't have to waste 
 	// ram for an Off schedule.  Only heat and cool are in the arrays
 	mode = (SchedMode_e)(mode - 1);
 
 	// check date & time against the stored schedule
-	for( uint idx = 0; idx < 4; idx++ )
+	for( int idx = 0; idx < 4; idx++ )
 	{
-		storedTime = schedule[dow][mode].setting[idx].time;
-		// Serial << "storedTime: " << storedTime << mendl;
+		storedTime.hour = schedule[dow][mode].setting[idx].hour;
+		storedTime.minute = schedule[dow][mode].setting[idx].minute;
+		storedTime.ampm = schedule[dow][mode].setting[idx].ampm;
 
-		//March 13, 2022 7:33:20 PM
-		if( storedTime > 1647200000 )
+		if( storedTime.hour > 0 )
 		{
-			uint8_t hourStored = myTZ.hour();
-			uint8_t minuteStored = myTZ.minute();
+			
+			Serial << "storedTime: " << storedTime.hour << ":" << storedTime.minute << ((storedTime.ampm == AM ) ? "AM" : "PM" ) << mendl;
+			Serial << "time: " << myTZ.hourFormat12() << ":" << myTZ.minute() << ( (myTZ.isAM() ) ? "AM" : "PM" ) << mendl;
 
-			if( hour == hourStored )
+			if( myTZ.isAM() == storedTime.ampm )
 			{
-				if( minute == minuteStored )
+				if( myTZ.hourFormat12() == storedTime.hour )
 				{
-					// we have a match!
-					newTemp.newValue = true;
-					newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
-					break;
+					if( myTZ.minute() == storedTime.minute )
+					{
+						// we have a match!
+						Serial << "We have a match!" << mendl;
+						newTemp.newValue = true;
+						newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
+						break;
+					}
 				}
 			}
 		}
@@ -79,7 +81,7 @@ void Scheduler::init( timezone_e new_tz )
 	this->tz = new_tz;
 
 	// debug ezTime
-	setDebug(INFO);
+	// setDebug(INFO);
 
 	Serial << (F( "Syncing NTP" ) ) << mendl;
 	
@@ -92,6 +94,7 @@ void Scheduler::init( timezone_e new_tz )
 	
 
 	myTZ.setLocation( timeZoneStr[ tz ].c_str() );
+	myTZ.setDefault();
 	Serial << F("Central Time:     ") << myTZ.dateTime() << mendl;
 
 
