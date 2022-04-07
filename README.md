@@ -14,4 +14,4 @@ TODO:
 - optimize the sprite sheet to remove unused sprites
 - add a few more mario sprites to allow "running" when heat or cool is active
 - add schedules
-- add time zone user entry
+- ~~add time zone user entry.~~ Added, but ezTime doesn't update, it needs a restart. delete & recreate the object causes WDT reset

@@ -577,7 +577,7 @@ timezone_e MyThermostat::timeZone_get( void )
 
 std::string MyThermostat::timeZone_getTimeStr( void )
 {
-	return mySched.myTZ->dateTime( "l, g:i:s A" ).c_str();
+	return mySched.myTZ.dateTime( "l, g:i:s A" ).c_str();
 }
 
 // return true if the cookie is valid
