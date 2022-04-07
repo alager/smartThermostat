@@ -117,8 +117,6 @@ float MyThermostat::getTemperature_f()
 	// low pass filter
 	outputTemp += ( temperature - outputTemp ) / a;
 	
-	// Serial.print("TempAvg:	");
-	// Serial.println( outputTemp );
 	return outputTemp;
 }
 
@@ -579,7 +577,7 @@ timezone_e MyThermostat::timeZone_get( void )
 
 std::string MyThermostat::timeZone_getTimeStr( void )
 {
-	return mySched.myTZ.dateTime( "l, g:i:s A" ).c_str();
+	return mySched.myTZ->dateTime( "l, g:i:s A" ).c_str();
 }
 
 // return true if the cookie is valid
@@ -596,8 +594,6 @@ bool MyThermostat::eepromCookieIsValid( void )
 // write some sane values to the eeprom
 void MyThermostat::eepromWriteFirstValues( void )
 {
-	int addr = 0;
-	
 	eepromData.cookie =		MAGIC_COOKIE;
 	eepromData.coolTemp =	75.0f;
 	eepromData.hotTemp =	66.5f;
@@ -634,6 +630,17 @@ void MyThermostat::eepromWriteFirstValues( void )
 	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].ampm = PM;
 	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].temperature = 82.3f;
 
+	this->saveSettings();
+	  
+}
+
+
+// update the eeprom values to make any changes permanent
+// Note: it only wirtes the flash if it has been changed.
+void MyThermostat::saveSettings( void )
+{
+	int addr = 0;
+
 	// the put command writes local data back to 
 	// the eeprom cache, but it isn't commited to flash yet 
 	 EEPROM.put( addr, eepromData );
@@ -642,14 +649,6 @@ void MyThermostat::eepromWriteFirstValues( void )
 	// hardware flash.  flash write occurs if and only if one or more byte
 	// in byte-array cache has been changed, but if so, ALL sizeof(eepromData) bytes are 
 	// written to flash
-	EEPROM.commit();  
-}
-
-
-// update the eeprom values to make any changes permanent
-// Note: it only wirtes the flash if it has been changed.
-void MyThermostat::saveSettings( void )
-{
 	EEPROM.commit();
 }
 
