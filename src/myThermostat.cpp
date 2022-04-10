@@ -50,7 +50,7 @@ void MyThermostat::init()
         Serial << (F("   ID of 0x56-0x58 represents a BMP 280,")) << mendl;
         Serial << (F("        ID of 0x60 represents a BME 280.")) << mendl;
         Serial << (F("        ID of 0x61 represents a BME 680.")) << mendl;
-        while (1) { delay(10); }
+        // while (1) { delay(10); }
     }
     
 	bme.setSampling(
@@ -596,11 +596,11 @@ void MyThermostat::eepromWriteFirstValues( void )
 {
 	eepromData.cookie =		MAGIC_COOKIE;
 	eepromData.coolTemp =	75.0f;
-	eepromData.hotTemp =	66.5f;
+	eepromData.hotTemp =	63.5f;
 	eepromData.hysteresis =	0.2f;
 	eepromData.mode =		MODE_OFF;
 
-	eepromData.fanDelay =			120;		// 2 minutes in seconds
+	eepromData.fanDelay =			60;			// 2 minutes in seconds ( our heat pump runs for an additional 60 seconds after fan is told to turn off )
 	eepromData.compressorOffDelay =	300;		// 5 minutes in seconds		
 	eepromData.compressorMaxRuntime = 18000;	// 5 hours in seconds
 
@@ -614,11 +614,13 @@ void MyThermostat::eepromWriteFirstValues( void )
 			// cooling schedule
 			eepromData.schedule[ dow ][ 0 ].setting[ idx ].hour = 0;
 			eepromData.schedule[ dow ][ 0 ].setting[ idx ].minute = 0;
+			eepromData.schedule[ dow ][ 0 ].setting[ idx ].ampm = AM;
 			eepromData.schedule[ dow ][ 0 ].setting[ idx ].temperature = 0;
 
 			// heating schedule
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].hour = 0;
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].minute = 0;
+			eepromData.schedule[ dow ][ 1 ].setting[ idx ].ampm = AM;
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].temperature = 0;
 		}
 	}
