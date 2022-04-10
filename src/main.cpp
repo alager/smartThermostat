@@ -249,15 +249,37 @@ void setup()
 	// Print ESP8266 Local IP Address
 	Serial.println(WiFi.localIP());
 
+	Serial << "chip ID: ";
+	Serial.println( ESP.getChipId(), HEX);
+
+
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
 	{
 		
 #ifdef _DEBUG_
 		// Start mDNS with name esp8266
-		if( MDNS.begin( F("therm9") ) )
-		{ 
-			Serial << (F("MDNS started: therm9")) << mendl;
+		// if( MDNS.begin( F("therm9") ) )
+		// { 
+		// 	Serial << (F("MDNS started: therm9")) << mendl;
+		// }
+
+		if( 0x4864FE == ESP.getChipId() )
+		{
+			// Start mDNS with name esp8266
+			if( MDNS.begin( F("therm9") ) )
+			{ 
+				Serial << (F("MDNS started: therm9")) << mendl;
+			}
+		}
+		else
+		if( 0x4852E3 == ESP.getChipId() )
+		{
+			// Start mDNS with name esp8266
+			if( MDNS.begin( F("therm8") ) )
+			{ 
+				Serial << (F("MDNS started: therm8")) << mendl;
+			}
 		}
 		#else
 		// Start mDNS with name esp8266
@@ -267,7 +289,6 @@ void setup()
 		}
 #endif
 		// Serial << "ChiID: " ;
-		// Serial.println( ESP.getChipId(), HEX);
 		// if( 0x4864FE == ESP.getChipId() )
 		// {
 		// 	// Start mDNS with name esp8266
@@ -279,11 +300,11 @@ void setup()
 		// else
 		// if( 0x48B46D == ESP.getChipId() )
 		// {
-			// Start mDNS with name esp8266
-			// if( MDNS.begin( F("therm1") ) )
-			// { 
-			// 	Serial << (F("MDNS started: therm1")) << mendl;
-			// }
+		// 	// Start mDNS with name esp8266
+		// 	if( MDNS.begin( F("therm1") ) )
+		// 	{ 
+		// 		Serial << (F("MDNS started: therm1")) << mendl;
+		// 	}
 		// }		
 	}
 
@@ -345,7 +366,7 @@ void loop()
 				someTherm->clearFanRunOnce();
 			}
 			else
-			if( someTherm->getTemperature_f() <= someTherm->getTemperatureSetting() )
+			if( someTherm->getTemperature_f() <= someTherm->getTemperatureSetting() - someTherm->getTempHysteresis() )
 			{
 				// turn off the cooler, but run fan for a little longer
 				someTherm->turnOffCooler();
@@ -370,7 +391,7 @@ void loop()
 				someTherm->clearFanRunOnce();
 			}
 			else
-			if( someTherm->getTemperature_f() >= someTherm->getTemperatureSetting() )
+			if( someTherm->getTemperature_f() >= someTherm->getTemperatureSetting() + someTherm->getTempHysteresis() )
 			{
 				// turn off the heater, but run fan for a little longer
 				someTherm->turnOffHeater();
