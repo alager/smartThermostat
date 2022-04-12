@@ -1,0 +1,39 @@
+html {
+    color: #888;
+    display: table;
+    font-family: sans-serif;
+    height: 100%;
+    width: 100%;
+}
+
+.day
+{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.Hseparator
+{
+    border-bottom: 1px solid #888;
+}
+
+.rightJustify
+{
+    display:flex;
+    justify-content:flex-end;
+    width:100%; padding:0;
+}
+
+.addRemove
+{
+    border-radius: 20px;
+    font-size: 20px;
+}
+
+.dot {
+    height: 25px;
+    width: 25px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}
