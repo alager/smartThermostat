@@ -427,33 +427,40 @@ void configureRoutes( void )
 	// Route for root / web page
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send( LittleFS, "/index.html", "text/html" );
+		request->send( LittleFS, F("/index.html"), F("text/html") );
 	});
 
 	// Route to load style.css file
 	server.on("/mario.css", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send(LittleFS, "/mario.css", "text/css");
+		request->send(LittleFS, F("/mario.css"), F("text/css") );
 	});
 
 	// sen the sprites
 	server.on("/Mario_3_sprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send(LittleFS, "/Mario_3_sprites.jpg", "image/jpeg");
+		request->send(LittleFS, F("/Mario_3_sprites.jpg"), F("image/jpeg") );
 	});
 
 	// send the fonts
 	server.on("/marioFont.woff", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send(LittleFS, "/marioFont.woff", "font/woff");
+		request->send(LittleFS, F("/marioFont.woff"), F("font/woff") );
 	});
 
 	// deal with the favicon.ico
 	server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
-		request->send(LittleFS, "/favicon.ico", "image/x-image");
+		request->send(LittleFS, F("/favicon.ico"), F("image/x-image") );
+	});
+
+	// deal with not found ( 404 )
+	server.onNotFound( []( AsyncWebServerRequest *request )
+	{
+		request->send(404, "text/plain", F( "404: Not found") );
 	});
 }
+
 
 void sendTelemetry( void )
 {
