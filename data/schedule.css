@@ -6,10 +6,16 @@ html {
     width: 100%;
 }
 
-.day
+.daySmall
 {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 0.7em;
+    margin-bottom: 0.7em;
+}
+
+.dayBig
+{
+    margin-top: 7em;
+    margin-bottom: 7em;
 }
 
 .Hseparator

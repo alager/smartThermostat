@@ -54,8 +54,12 @@ function editSched()
 
 	// hide all the divs and then only show the one that was clicked
 	hideDayDivs();
-
 	myDiv.hidden = false;
+
+	// make this div large
+	myDiv.classList.add( "dayBig" );
+	myDiv.classList.remove( "daySmall" );
+
 }
 
 function hideDayDivs(  )
