@@ -30,10 +30,18 @@ html {
     font-size: 20px;
 }
 
-.dot {
-    height: 25px;
-    width: 25px;
+.dot
+{
+    height: 1.7em;
+    width: 1.7em;
     background-color: #bbb;
     border-radius: 50%;
     display: inline-block;
+    vertical-align: middle;
+}
+
+.hourBox
+{
+    display: inline-block;
+    width: 1.7em;
 }

@@ -2,39 +2,80 @@
 <html lang="">
 
 <head>
-  <meta charset="utf-8">
-  <title></title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="utf-8">
+	<title></title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Place favicon.ico in the root directory -->
-  <link rel="stylesheet" href="schedule.css">
+	<!-- Place favicon.ico in the root directory -->
+	<link rel="stylesheet" href="schedule.css">
 </head>
 
 <body>
 
-  <!-- Add your site or application content here -->
-  <h4 style="text-align: center">Schedule</h4>
+<!-- Add your site or application content here -->
+<h4 style="text-align: center">Schedule</h4>
 
-  <div id="scheduleBox">
-    <div class="Hseparator"></div>
-    <div id="monday" class="day">Monday</div><div class="Hseparator"></div>
-    <div id="tuesday" class="day">Tuesday</div><div class="Hseparator"></div>
-    <div id="wednesday" class="day">Wednesday</div><div class="Hseparator"></div>
-    <div id="thursday" class="day">Thursday</div><div class="Hseparator"></div>
-    <div id="friday" class="day">Friday</div><div class="Hseparator"></div>
-    <div id="saturday" class="day">Saturday</div><div class="Hseparator"></div>
-    <div id="sunday" class="day">Sunday</div><div class="Hseparator"></div>
-  </div>
+<div id="scheduleBox">
+	<div class="Hseparator"></div>
+	<div id="monday" class="day">Monday
+		<span id="mon-am-00" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-01" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-02" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-03" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-04" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-05" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-06" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-07" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-08" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-09" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-10" class="hourBox"> &nbsp;</span>
+		<span id="mon-am-11" class="hourBox"> &nbsp;</span>
 
-  <div class="rightJustify">
-    <button id="buttonHeat" class="addRemove">Add Heat</button>
-    <button id="buttonCool" class="addRemove">Add Cool</button>
-    <button id="buttonDelete" class="addRemove">Delete</button>
-  </div>
+		<span id="mon-pm-00" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-01" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-02" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-03" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-04" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-05" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-06" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-07" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-08" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-09" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-10" class="hourBox"> &nbsp;</span>
+		<span id="mon-pm-11" class="hourBox"> &nbsp;</span>
+	</div>
 
-    <!-- javascripts go here -->
-  <script src="schedule.js" defer></script>
+	<div class="Hseparator"></div>
+
+	<div id="tuesday" class="day">Tuesday</div>
+	<div class="Hseparator"></div>
+
+	<div id="wednesday" class="day">Wednesday</div>
+	<div class="Hseparator"></div>
+
+	<div id="thursday" class="day">Thursday</div>
+	<div class="Hseparator"></div>
+
+	<div id="friday" class="day">Friday</div>
+	<div class="Hseparator"></div>
+
+	<div id="saturday" class="day">Saturday</div>
+	<div class="Hseparator"></div>
+
+	<div id="sunday" class="day">Sunday</div>
+	<div class="Hseparator"></div>
+
+</div>
+
+<div class="rightJustify">
+	<button id="buttonHeat" class="addRemove">Add Heat</button>
+	<button id="buttonCool" class="addRemove">Add Cool</button>
+	<button id="buttonDelete" class="addRemove">Delete</button>
+</div>
+
+<!-- javascripts go here -->
+<script src="schedule.js" defer></script>
 
 
 
