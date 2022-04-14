@@ -32,7 +32,6 @@ function initButtons()
 
 	document.getElementById( "scheduleBox" ).addEventListener( "click", editSched );
 
-	schedBox.addEventListener( 'click', editSched );
 	buttonHeat.addEventListener( 'click', addHeat );
 	buttonCool.addEventListener( 'click', addCool );
 	// buttonDelete.addEventListener( 'click', editSched );
