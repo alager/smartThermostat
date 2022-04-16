@@ -90,14 +90,11 @@ void Scheduler::init( timezone_e new_tz )
 
 	// Provide official timezone names
 	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-	Serial <<  F("our Timezone: " ) << timeZoneStr[ tz ].c_str() << mendl;
-	
+	Serial <<  F("Timezone: " ) << timeZoneStr[ tz ].c_str() << mendl;
+	Serial <<  myTZ.dateTime() << mendl;
 
 	myTZ.setLocation( timeZoneStr[ tz ].c_str() );
 	myTZ.setDefault();
-	Serial << F("Central Time:     ") << myTZ.dateTime() << mendl;
-
-
 }
 
 
