@@ -13,5 +13,7 @@ The user interface is web based, and optimized for a sideways (landscape) cell p
 TODO:
 - optimize the sprite sheet to remove unused sprites
 - add a few more mario sprites to allow "running" when heat or cool is active
-- add schedules
+- add schedules - in progress
 - ~~add time zone user entry.~~ Added, but ezTime doesn't update, it needs a restart. delete & recreate the object causes WDT reset
+- add fan only schedule
+- add fun manual control to UI
