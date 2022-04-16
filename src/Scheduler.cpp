@@ -106,3 +106,9 @@ void Scheduler::loadSchedule( schedAry_t *sched )
 {
 	this->schedule = sched;
 }
+
+
+void Scheduler::loadFanSched( fanTimeAry_t *fanSched )
+{
+	this->fanTime = fanSched;
+}

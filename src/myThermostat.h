@@ -22,7 +22,7 @@ typedef enum
 } __attribute__((packed)) mode_e;
 
 
-#define MAGIC_COOKIE	( 0xdebb1e08 )
+#define MAGIC_COOKIE	( 0xdebb1e04 )
 typedef struct 
 {
 	unsigned long	cookie;					// magic cookie for versioning
@@ -39,6 +39,7 @@ typedef struct
 	timezone_e		localTimeZone;			// what time zone we are in
 
 	sched_t  		schedule[ 8 ][ 2 ];		// the 2 dimensions is for heat or cooling, the schedule, 1-8 is for dow 
+	fanTimeAry_t	fanTime[ 8 ];			// an array for fan run times
 } __attribute__((packed)) myEEprom_t;
 
 

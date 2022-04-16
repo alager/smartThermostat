@@ -623,6 +623,20 @@ void MyThermostat::eepromWriteFirstValues( void )
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].ampm = AM;
 			eepromData.schedule[ dow ][ 1 ].setting[ idx ].temperature = 0;
 		}
+
+		// fan schedule, 2 per day
+		eepromData.fanTime[ dow ][ 0 ].ampm = AM;
+		eepromData.fanTime[ dow ][ 0 ].hour = 0;
+		eepromData.fanTime[ dow ][ 0 ].minute = 0;
+		eepromData.fanTime[ dow ][ 0 ].runTime = 0;
+
+		eepromData.fanTime[ dow ][ 1 ].ampm = AM;
+		eepromData.fanTime[ dow ][ 1 ].hour = 0;
+		eepromData.fanTime[ dow ][ 1 ].minute = 0;
+		eepromData.fanTime[ dow ][ 1 ].runTime = 0;
+
+
+
 	}
 
 	// test heat schedule - it worked!
@@ -673,6 +687,9 @@ void MyThermostat::sched_init( void )
 	// init the schedule with our timezone
 	mySched.init( eepromData.localTimeZone );
 
-	// 
+	// load the cooling/heating schedule
 	mySched.loadSchedule( eepromData.schedule );
+
+	// load the fan schedule
+	mySched.loadFanSched( eepromData.fanTime );
 }
