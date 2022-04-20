@@ -5,7 +5,24 @@
 
 /* define our Mario element sprites */
 .sprite {
-    background: url("Mario_3_sprites.jpg") no-repeat;
+    /* background: url("Mario_3_sprites.jpg") no-repeat; */
+	background: url("thermSprites.jpg") no-repeat;
+}
+
+
+/* select the Mario Standing Sprite */
+.fanSprite {
+	width: 40px; /* Icon width */
+	height: 42px; /* Icon height */
+	display: inline-block; /* Display icon as inline block */
+	zoom: 120%;
+	background-position: -172px -425px; /* Icon background position in sprite */
+
+	/* this won't move, so position it here */
+	position: absolute;
+	top: 127px;
+	left: -7px;
+	zoom: 100%;
 }
 
 /* select the Mario Standing Sprite */

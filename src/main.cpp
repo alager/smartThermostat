@@ -441,6 +441,10 @@ void configureRoutes( void )
 	{
 		request->send(LittleFS, F("/Mario_3_sprites.jpg"), F("image/jpeg") );
 	});
+	server.on("/thermSprites.jpg", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, F("/thermSprites.jpg"), F("image/jpeg") );
+	});
 
 	// send the fonts
 	server.on("/marioFont.woff", HTTP_GET, [](AsyncWebServerRequest *request)
