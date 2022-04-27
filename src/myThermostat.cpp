@@ -251,16 +251,22 @@ void MyThermostat::runSlowTick( void )
 }
 
 
-// this is the fast tick
+// this is the fast tickTemperature
 void MyThermostat::loopTick( void )
 {
-	// run the schedule tick, and see if there is a new value returned
-	newTemperature_t newTemp = mySched.tick( ( SchedMode_e )this->getMode() );
+	// run the schedule tickTemperature, and see if there is a new value returned
+	newTemperature_t newTemp = mySched.tickTemperature( ( SchedMode_e )this->getMode() );
 
 	// if there is a new value, then set the temperature
 	if( newTemp.newValue == true )
 	{
 		setTemperatureSetting( newTemp.temp );
+	}
+
+	newFanTime_t newFanTime = mySched.tickFan();
+	if( newFanTime.newValue == true )
+	{
+		// run the fan!
 	}
 }
 
@@ -638,13 +644,6 @@ void MyThermostat::eepromWriteFirstValues( void )
 
 
 	}
-
-	// test heat schedule - it worked!
-	// ezTime will compare the local hour to the stored hour value.
-	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].hour = 5;
-	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].minute = 10;
-	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].ampm = PM;
-	// eepromData.schedule[ SATURDAY ][ 1 ].setting[ 0 ].temperature = 82.3f;
 
 	this->saveSettings();
 	  

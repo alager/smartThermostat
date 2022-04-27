@@ -135,26 +135,50 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 		}
 		else
 		{
-			Serial.println( F("trying it as JSON"));
+			Serial << ( F("trying it as JSON")) << mendl;
 
 			// try to parse as JSON
 			StaticJsonDocument<200> json;
 			DeserializationError err = deserializeJson(json, data);
 			if (err)
 			{
-				Serial.print(F("deserializeJson() failed with code "));
-				Serial.println(err.c_str());
+				Serial << (F("deserializeJson() failed with code ")) << err.c_str() << mendl;
 				return;
 			}
 
+			JsonObject fan = json["fanClick"];
+			if( !fan.isNull() )
+			{
+				JsonObject off = fan[ "off" ];
+				if( !off.isNull() )
+				{
+					// we got an off command, so clear the fan timer
+					// then notify the UI to update the fan
+					Serial << "FAN: Off" << mendl;
+
+					// put it into a buffer to send to the clients
+					// serializeJson( doc, settingsStr );
+
+					// send it to the clients
+					// notifyClients( settingsStr );
+				}
+
+				JsonObject add15minutes = fan[ "add15minutes" ];
+				if( !add15minutes.isNull() )
+				{
+					// we got an add command, so add to the fan timer (and turn it on if applicable)
+					// then notify the UI to update the fan
+					Serial << "FAN: add 15 minutes" << mendl;
+					// put it into a buffer to send to the clients
+					// serializeJson( doc, settingsStr );
+
+					// send it to the clients
+					// notifyClients( settingsStr );
+				}
+			}
+			
 			JsonObject settings = json["settings"];
-			if( settings["fanDelay"] == 0 
-			 && settings["compressorOffDelay"] == 0
-			 && settings["compressorMaxRuntime"] == 0 )
-			 {
-				 // bad stuff happened on the network...keep our existing values
-			 }
-			 else
+			if( !settings.isNull() )
 			 {
 				
 				someTherm->settings_setFanDelay( settings[ "fanDelay" ] );
@@ -456,6 +480,12 @@ void configureRoutes( void )
 	server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
 		request->send(LittleFS, F("/favicon.ico"), F("image/x-image") );
+	});
+
+	// long press javascript
+	server.on("/longClick.js", HTTP_GET, [](AsyncWebServerRequest *request)
+	{
+		request->send(LittleFS, F("/longClick.js"), F("text/javascript") );
 	});
 
 	// deal with not found ( 404 )

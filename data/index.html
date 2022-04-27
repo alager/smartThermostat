@@ -350,8 +350,11 @@ function initButtons()
 	document.getElementById('clickMode').addEventListener('click', clickMode);
 	document.getElementById('hammer').addEventListener('click', clickHammer);
 	document.getElementById('star').addEventListener('click', clickStar);
+	document.getElementById('fan').addEventListener('click', clickFan);
+	document.getElementById('fan').addEventListener('long-press', longClickFan);
 
-	modeSetting =	document.getElementById('mode');
+
+		modeSetting =	document.getElementById('mode');
 	tempSet =		document.getElementById('tempSet');
 	temperature =	document.getElementById('temperature');
 	humidityValue =		document.getElementById('humidityValue');
@@ -380,6 +383,24 @@ function initButtons()
 	});
 }
 
+
+function longClickFan(  )
+{
+	var fanClick = {};
+	var fan = {};
+	fanClick.off = true;
+	fan.fanClick = fanClick;
+	websocket.send( JSON.stringify( fanClick ));
+}
+
+function clickFan(  )
+{
+	var fanClick = {};
+	var fan = {};
+	fanClick.add15minutes = true;
+	fan.fanClick = fanClick;
+	websocket.send( JSON.stringify( fanClick ));
+}
 
 // change to the settings view
 function clickHammer()
@@ -472,6 +493,7 @@ function showSlides(n) {
 
 
 </script>
+	<script src="longClick.js" defer></script>
 	</head>
 	<body>
 		<div id="thermostatView">

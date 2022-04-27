@@ -55,6 +55,12 @@ typedef struct
 	float	temp;
 } newTemperature_t;
 
+typedef struct
+{
+	bool	newValue;
+	uint8_t	fanTime;
+} newFanTime_t;
+
 
 typedef enum
 {
@@ -68,7 +74,8 @@ class Scheduler
 	public:
 		Scheduler();
 
-		newTemperature_t tick( SchedMode_e mode );
+		newTemperature_t tickTemperature( SchedMode_e mode );
+		newFanTime_t tickFan( void );
 		void init( timezone_e tz );
 		void loadSchedule( schedAry_t *sched );
 		void loadFanSched( fanTimeAry_t *fanSched );

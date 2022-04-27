@@ -19,8 +19,8 @@ Scheduler::Scheduler()
 }
 
 
-// tick is run
-newTemperature_t Scheduler::tick( SchedMode_e mode )
+// tickTemperature is run
+newTemperature_t Scheduler::tickTemperature( SchedMode_e mode )
 {
 	setTime_t storedTime;
 	newTemperature_t newTemp = { .newValue = false, .temp = 0.0f };
@@ -30,7 +30,7 @@ newTemperature_t Scheduler::tick( SchedMode_e mode )
 	events();
 
 	// day of week, dow
-	uint8_t dow = myTZ.weekday();	
+	uint8_t dow = myTZ.weekday();
 	
 	// off, don't search or update the temperature
 	if( mode == eOff )
@@ -60,7 +60,7 @@ newTemperature_t Scheduler::tick( SchedMode_e mode )
 					if( myTZ.minute() == storedTime.minute )
 					{
 						// we have a match!
-						Serial << "We have a match!" << mendl;
+						Serial << "We have a sched match!" << mendl;
 						newTemp.newValue = true;
 						newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
 						break;
@@ -70,11 +70,47 @@ newTemperature_t Scheduler::tick( SchedMode_e mode )
 		}
 	}
 
+	
 	// if there is a match then indicate that the temperature should be updated
 	return newTemp;
 }
 
 
+newFanTime_t Scheduler::tickFan( void )
+{
+	setTime_t storedTime;
+	newFanTime_t newFanRun = { .newValue = false, .fanTime = 0 };
+
+	// day of week, dow
+	uint8_t dow = myTZ.weekday();
+
+	// now look if we have a fan run time to complete
+	for( int idx = 0; idx < 2; idx++ )
+	{
+		storedTime.hour = fanTime[dow][idx].hour;
+		storedTime.minute = fanTime[dow][idx].minute;
+		storedTime.ampm = fanTime[dow][idx].ampm;
+
+		if( storedTime.hour > 0 )
+		{
+			if( myTZ.isAM() == storedTime.ampm )
+			{
+				if( myTZ.hourFormat12() == storedTime.hour )
+				{
+					if( myTZ.minute() == storedTime.minute )
+					{
+						// we have a fan match
+						Serial << "We have a FAN match!" << mendl;
+						break;
+					}
+				}
+			}
+
+		}
+	}
+
+	return newFanRun;
+}
 
 void Scheduler::init( timezone_e new_tz )
 {
