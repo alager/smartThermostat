@@ -38,6 +38,7 @@ var delayId;
 var thermostatView;
 var settingsView;
 var dsplyTime;
+var fanId;
 
 // to handle websocket (re)connections
 const gateway = `ws://${window.location.hostname}/ws`;
@@ -231,6 +232,23 @@ function onMessage( event )
 		const tzVal = getObjKey( tzMap, settings.timeZone );
 		document.querySelector("input[name=timeZone][value=" + tzVal +"]").click();
 	}
+	else
+	if( data.hasOwnProperty( "fanClick" ) )
+	{
+		var fanClick = data.fanClick;
+
+		if( fanClick.hasOwnProperty( "add15minutes") )
+		{
+			// turn on fan spinny class
+			fanId.classList.add( "fanSpin" );
+		}
+		else
+		if( fanClick.hasOwnProperty( "off") )
+		{
+			// turn the fan spinny off
+			fanId.classList.remove( "fanSpin" );
+		}
+	}
 }
 
 // do a reverse lookup for key by value
@@ -245,7 +263,8 @@ var tzMap = {
 	eMST: 2,
 	eCST: 3,
 	eEST: 4
-}
+};
+
 // get all the settings and send them back to the server
 function saveSettings()
 {
@@ -350,11 +369,12 @@ function initButtons()
 	document.getElementById('clickMode').addEventListener('click', clickMode);
 	document.getElementById('hammer').addEventListener('click', clickHammer);
 	document.getElementById('star').addEventListener('click', clickStar);
-	document.getElementById('fan').addEventListener('click', clickFan);
-	document.getElementById('fan').addEventListener('long-press', longClickFan);
+	fanId = document.getElementById('fan');
+	fanId.addEventListener('click', clickFan);
+	fanId.addEventListener('long-press', longClickFan);
 
 
-		modeSetting =	document.getElementById('mode');
+	modeSetting =	document.getElementById('mode');
 	tempSet =		document.getElementById('tempSet');
 	temperature =	document.getElementById('temperature');
 	humidityValue =		document.getElementById('humidityValue');
@@ -390,7 +410,7 @@ function longClickFan(  )
 	var fan = {};
 	fanClick.off = true;
 	fan.fanClick = fanClick;
-	websocket.send( JSON.stringify( fanClick ));
+	websocket.send( JSON.stringify( fan ));
 }
 
 function clickFan(  )
@@ -399,7 +419,7 @@ function clickFan(  )
 	var fan = {};
 	fanClick.add15minutes = true;
 	fan.fanClick = fanClick;
-	websocket.send( JSON.stringify( fanClick ));
+	websocket.send( JSON.stringify( fan ));
 }
 
 // change to the settings view

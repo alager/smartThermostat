@@ -75,6 +75,8 @@ class MyThermostat
 		void setFanRunTime( unsigned long );
 		unsigned long getFanRunTime( void );
 		void decrementFanRunTime( void );
+		void turnOffFan( void );
+		void turnOnFan( void );
 
 		void turnOffCooler( void );
 		bool turnOnCooler( void );

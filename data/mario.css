@@ -25,6 +25,23 @@
 	/*zoom: 100%;*/
 }
 
+.fanSpin
+{
+	animation-name: spinny;
+	animation-duration: 90ms;
+	animation-iteration-count: infinite;
+}
+
+@keyframes spinny
+{
+	0% {
+		transform: rotate(-20deg);
+	}
+	50% {
+		transform: rotate(20deg);
+	}
+}
+
 /* select the Mario Standing Sprite */
 .marioStanding {
 	width: 46px; /* Icon width */

@@ -356,6 +356,19 @@ void MyThermostat::decrementFanRunTime( void )
 		fanRunTime--;
 }
 
+void MyThermostat::turnOffFan( void )
+{
+	// only turn off the fan if we are not activley heating or cooling
+	if( MODE_OFF == this->currentState() )
+		digitalWrite( GPIO_FAN, LOW );
+
+	this->setFanRunTime( 0ul );
+}
+
+void MyThermostat::turnOnFan( void )
+{
+	digitalWrite( GPIO_FAN, HIGH );
+}
 
 // turn off the cooler but set the fan to run for a while
 void MyThermostat::turnOffCooler( void )
@@ -378,6 +391,7 @@ void MyThermostat::turnOffCooler( void )
 	// turn off the fan after a delay
 	if( getFanRunTime() == 0 )
 	{
+		// turnOffFan();
 		digitalWrite( GPIO_FAN, LOW );
 	}
 		
@@ -392,7 +406,8 @@ bool MyThermostat::turnOnCooler( void )
 	if( isSafeToRunCompressor() )
 	{
 		// the active state is cooling turn on the fan and compressor
-		digitalWrite( GPIO_FAN, HIGH );
+		// digitalWrite( GPIO_FAN, HIGH );
+		turnOnFan();
 		digitalWrite( GPIO_COMPRESSOR, HIGH );
 		digitalWrite( GPIO_OB, HIGH );
 
@@ -427,6 +442,7 @@ void MyThermostat::turnOffHeater( void )
 	if( getFanRunTime() == 0 )
 	{
 		digitalWrite( GPIO_FAN, LOW );
+		// turnOffFan();
 	}
 }
 
@@ -440,7 +456,8 @@ bool MyThermostat::turnOnHeater( void )
 	if( isSafeToRunCompressor() )
 	{
 		// the active state is cooling turn on the fan and compressor
-		digitalWrite( GPIO_FAN, HIGH );
+		// digitalWrite( GPIO_FAN, HIGH );
+		turnOnFan();
 		digitalWrite( GPIO_COMPRESSOR, HIGH );
 
 		// shadow the mode based on GPIO

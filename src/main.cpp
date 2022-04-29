@@ -147,33 +147,49 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			}
 
 			JsonObject fan = json["fanClick"];
+			
 			if( !fan.isNull() )
 			{
-				JsonObject off = fan[ "off" ];
-				if( !off.isNull() )
+				std::string JSONRetStr;
+
+				bool off = fan[ "off" ];
+				if( off )
 				{
 					// we got an off command, so clear the fan timer
 					// then notify the UI to update the fan
 					Serial << "FAN: Off" << mendl;
 
+					// turn off the fan
+					someTherm->turnOffFan();
+					
 					// put it into a buffer to send to the clients
-					// serializeJson( doc, settingsStr );
+					serializeJson( json, JSONRetStr );
 
 					// send it to the clients
-					// notifyClients( settingsStr );
+					notifyClients( JSONRetStr );
+					return;
 				}
 
-				JsonObject add15minutes = fan[ "add15minutes" ];
-				if( !add15minutes.isNull() )
+				bool add15minutes = fan[ "add15minutes" ];
+				// serializeJsonPretty( add15minutes, Serial );
+				Serial << "add15minutes: " << add15minutes << mendl;
+
+				if( add15minutes )
 				{
 					// we got an add command, so add to the fan timer (and turn it on if applicable)
 					// then notify the UI to update the fan
 					Serial << "FAN: add 15 minutes" << mendl;
 					// put it into a buffer to send to the clients
 					// serializeJson( doc, settingsStr );
+					someTherm->turnOnFan();
+					someTherm->setFanRunTime( 60 * 15 );
+
+					// put it into a buffer to send to the clients
+					serializeJson( json, JSONRetStr );
 
 					// send it to the clients
-					// notifyClients( settingsStr );
+					notifyClients( JSONRetStr );
+					return;
 				}
 			}
 			
@@ -201,6 +217,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				// waitForSync();
 
 				Serial << F("Setting new time zone DONE") << mendl;
+				return;
 			 }
 		}
 	}
