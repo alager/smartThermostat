@@ -49,10 +49,6 @@ newTemperature_t Scheduler::tickTemperature( SchedMode_e mode )
 
 		if( storedTime.hour > 0 )
 		{
-			
-			Serial << "storedTime: " << storedTime.hour << ":" << storedTime.minute << ((storedTime.ampm == AM ) ? "AM" : "PM" ) << mendl;
-			Serial << "time: " << myTZ.hourFormat12() << ":" << myTZ.minute() << ( (myTZ.isAM() ) ? "AM" : "PM" ) << mendl;
-
 			if( myTZ.isAM() == storedTime.ampm )
 			{
 				if( myTZ.hourFormat12() == storedTime.hour )
@@ -61,6 +57,8 @@ newTemperature_t Scheduler::tickTemperature( SchedMode_e mode )
 					{
 						// we have a match!
 						Serial << "We have a sched match!" << mendl;
+						Serial << "storedTime: " << storedTime.hour << ":" << storedTime.minute << ((storedTime.ampm == AM ) ? "AM" : "PM" ) << mendl;
+						Serial << "time: " << myTZ.hourFormat12() << ":" << myTZ.minute() << ( (myTZ.isAM() ) ? "AM" : "PM" ) << mendl;
 						newTemp.newValue = true;
 						newTemp.temp =  schedule[dow][mode].setting[idx].temperature;
 						break;
