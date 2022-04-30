@@ -22,7 +22,6 @@
 	position: absolute;
 	top: 127px;
 	left: -7px;
-	/*zoom: 100%;*/
 }
 
 .fanSpin
@@ -40,6 +39,14 @@
 	50% {
 		transform: rotate(20deg);
 	}
+}
+
+
+#fanTimeId
+{
+	top: 12.5em;
+	position: absolute;
+	left: 0.25em;
 }
 
 /* select the Mario Standing Sprite */

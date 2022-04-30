@@ -337,7 +337,7 @@ float MyThermostat::getTempHysteresis( void )
 void MyThermostat::setFanRunTime( unsigned long time )
 {
 	if( time < 10UL )
-		time = 10UL;
+		time = 0UL;
 
 	fanRunTime = time / 10;
 }

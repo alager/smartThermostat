@@ -161,12 +161,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 					// turn off the fan
 					someTherm->turnOffFan();
+
+					Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
+
 					
 					// put it into a buffer to send to the clients
 					serializeJson( json, JSONRetStr );
 
 					// send it to the clients
 					notifyClients( JSONRetStr );
+					sendTelemetry();
 					return;
 				}
 
@@ -179,16 +183,22 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 					// we got an add command, so add to the fan timer (and turn it on if applicable)
 					// then notify the UI to update the fan
 					Serial << "FAN: add 15 minutes" << mendl;
-					// put it into a buffer to send to the clients
-					// serializeJson( doc, settingsStr );
-					someTherm->turnOnFan();
-					someTherm->setFanRunTime( 60 * 15 );
+					
+					// only turn on the fan if it is off right now
+					if( MODE_OFF == someTherm->currentState() )
+					{
+						someTherm->turnOnFan();
+						someTherm->setFanRunTime( (60 * 15) + someTherm->getFanRunTime() );
 
-					// put it into a buffer to send to the clients
-					serializeJson( json, JSONRetStr );
+						Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
 
-					// send it to the clients
-					notifyClients( JSONRetStr );
+						// put it into a buffer to send to the clients
+						serializeJson( json, JSONRetStr );
+
+						// send it to the clients
+						notifyClients( JSONRetStr );
+					}
+					sendTelemetry();
 					return;
 				}
 			}
@@ -528,6 +538,11 @@ void sendTelemetry( void )
 	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
 	telemetry[ "time" ] =			someTherm->timeZone_getTimeStr();
+	
+	if( MODE_OFF == someTherm->currentState() )
+		telemetry[ "fanTime" ] =		someTherm->getFanRunTime();
+	else
+		telemetry[ "fanTime" ] = 0;
 
 	// Generate the prettified JSON and send it to the Serial port.
 	// serializeJsonPretty(doc, Serial);

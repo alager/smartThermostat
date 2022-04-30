@@ -39,6 +39,7 @@ var thermostatView;
 var settingsView;
 var dsplyTime;
 var fanId;
+var fanTimeId;
 
 // to handle websocket (re)connections
 const gateway = `ws://${window.location.hostname}/ws`;
@@ -102,6 +103,19 @@ function onMessage( event )
 		pressureValue.innerHTML = parseFloat( tlm.presAvg ).toFixed( 1 );
 		humidityValue.innerHTML = parseFloat( tlm.humidAvg ).toFixed( 1 );
 		dsplyTime.innerHTML = tlm.time;
+
+		if( tlm.fanTime === 0 || typeof( tlm.fanTime ) == "undefined" )
+		{
+			// the timer has expired, so lets remove the counter and stop the fan
+			fanTimeId.innerHTML = "";
+			fanId.classList.remove( "fanSpin" );
+		}
+		else
+		{
+			const minutes = ~~(tlm.fanTime / 60);	// the ~~ gives the integer minutes
+			const seconds = tlm.fanTime % 60;		// the mod gives the integer seconds
+			fanTimeId.innerHTML = minutes + ":" + String( seconds ).padStart( 2, "0" );
+		}
 
 		var modeStr;
 		if( tlm.mode == 0 )
@@ -383,6 +397,7 @@ function initButtons()
 	thermostatView = document.getElementById('thermostatView');
 	settingsView =	document.getElementById('settingsView');
 	dsplyTime =		document.getElementById( 'dsplyTime' );
+	fanTimeId =		document.getElementById( 'fanTimeId' );
 
 
 	// populate an element that we animate 
@@ -406,11 +421,17 @@ function initButtons()
 
 function longClickFan(  )
 {
+	// prevent the click event from triggering immediately
+	fanId.removeEventListener( 'click', clickFan );
+
 	var fanClick = {};
 	var fan = {};
 	fanClick.off = true;
 	fan.fanClick = fanClick;
 	websocket.send( JSON.stringify( fan ));
+
+	// re-enable the click after 3 seconds
+	setTimeout( () => fanId.addEventListener('click', clickFan), 3000 );
 }
 
 function clickFan(  )
@@ -521,6 +542,7 @@ function showSlides(n) {
 			<div class="container marioDiv">
 				<!--Fan control-->
 				<div id="fan" class="sprite fanSprite"></div>
+				<div id="fanTimeId">0:00</div>
 
 				<!-- hammer takes user to settings -->
 				<div id="hammer" class="sprite hammerSprite"></div>
