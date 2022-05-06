@@ -115,6 +115,7 @@ function onMessage( event )
 			const minutes = ~~(tlm.fanTime / 60);	// the ~~ gives the integer minutes
 			const seconds = tlm.fanTime % 60;		// the mod gives the integer seconds
 			fanTimeId.innerHTML = minutes + ":" + String( seconds ).padStart( 2, "0" );
+			fanId.classList.add( "fanSpin" );
 		}
 
 		var modeStr;
