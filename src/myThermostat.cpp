@@ -482,8 +482,9 @@ void MyThermostat::turnOffAll( void )
 {
 	setMode( MODE_OFF );
 
-	// turn off the fan
-	digitalWrite( GPIO_FAN, LOW );
+	// turn off the fan, except when it was turned on by the user/schedule
+	if( getFanRunTime() == 0 )
+		digitalWrite( GPIO_FAN, LOW );
 
 	// turn off the heating & cooling
 	digitalWrite( GPIO_OB, LOW );
