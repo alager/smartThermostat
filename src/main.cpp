@@ -159,7 +159,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 					// then notify the UI to update the fan
 					Serial << "FAN: Off" << mendl;
 
-					// turn off the fan
+					// turn off the fan in a safe way in case heat/cooling is running
 					someTherm->turnOffFan();
 
 					Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
@@ -300,21 +300,14 @@ void setup()
 	// Print ESP8266 Local IP Address
 	Serial.println(WiFi.localIP());
 
-	Serial << "chip ID: ";
+	Serial << "chip ID: 0x";
 	Serial.println( ESP.getChipId(), HEX);
 
 
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
-	{
-		
-#ifdef _DEBUG_
+	{		
 		// Start mDNS with name esp8266
-		// if( MDNS.begin( F("therm9") ) )
-		// { 
-		// 	Serial << (F("MDNS started: therm9")) << mendl;
-		// }
-
 		if( 0x4864FE == ESP.getChipId() )
 		{
 			// Start mDNS with name esp8266
@@ -332,52 +325,43 @@ void setup()
 				Serial << (F("MDNS started: therm8")) << mendl;
 			}
 		}
-		#else
-		// Start mDNS with name esp8266
-		if( MDNS.begin( F("therm1") ) )
-		{ 
-			Serial << (F("MDNS started: therm1")) << mendl;
+		else
+		if( 0x48409D == ESP.getChipId() )
+		{
+			// Start mDNS with name esp8266
+			if( MDNS.begin( F("therm1") ) )
+			{ 
+				Serial << (F("MDNS started: therm1")) << mendl;
+			}
 		}
-#endif
-		// Serial << "ChiID: " ;
-		// if( 0x4864FE == ESP.getChipId() )
-		// {
-		// 	// Start mDNS with name esp8266
-		// 	if( MDNS.begin( F("therm9") ) )
-		// 	{ 
-		// 		Serial << (F("MDNS started: therm9")) << mendl;
-		// 	}
-		// }
-		// else
-		// if( 0x48B46D == ESP.getChipId() )
-		// {
-		// 	// Start mDNS with name esp8266
-		// 	if( MDNS.begin( F("therm1") ) )
-		// 	{ 
-		// 		Serial << (F("MDNS started: therm1")) << mendl;
-		// 	}
-		// }		
+
+		// add this for mDNS to respond
+		MDNS.addService("http", "TCP", 80);	
+
+		// after the network is up, we can init the scheduler
+		// it needs networking for NTP first
+		someTherm->sched_init();
+
+		// configure web server routes
+		configureRoutes();
+
+		// configure web server web socket
+		initWebSocket();
+
+		// Start Elegant OTA
+		AsyncElegantOTA.begin(&server);
+		// AsyncElegantOTA.begin(&server, "username", "password");
+		
+		// Start server
+		server.begin();
+	}
+	else
+	{
+		Serial << ( F( "WiFi Failed to connect" )) << mendl;
+		
 	}
 
-	// add this for mDNS to respond
-	MDNS.addService("http", "TCP", 80);
 
-	// after the network is up, we can init the scheduler
-	// it needs networking for NTP first
-	someTherm->sched_init();
-
-	// configure web server routes
-	configureRoutes();
-
-	// configure web server web socket
-	initWebSocket();
-
-	// Start Elegant OTA
-	AsyncElegantOTA.begin(&server);
-	// AsyncElegantOTA.begin(&server, "username", "password");
-	
-	// Start server
-	server.begin();
 }
  
 void loop()
