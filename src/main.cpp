@@ -522,6 +522,7 @@ void sendTelemetry( void )
 	telemetry[ "humidAvg" ] =		someTherm->getHumidity_f();
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
 	telemetry[ "time" ] =			someTherm->timeZone_getTimeStr();
+	telemetry[ "delayTime" ] =		someTherm->getCompressorOffTime();
 	
 	if( MODE_OFF == someTherm->currentState() )
 		telemetry[ "fanTime" ] =		someTherm->getFanRunTime();

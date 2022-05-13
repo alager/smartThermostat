@@ -104,6 +104,11 @@ function onMessage( event )
 		humidityValue.innerHTML = parseFloat( tlm.humidAvg ).toFixed( 1 );
 		dsplyTime.innerHTML = tlm.time;
 
+		if( tlm.delayTime )
+			delayId.hidden = false;
+		else
+			delayId.hidden = true;
+
 		if( tlm.fanTime === 0 || typeof( tlm.fanTime ) == "undefined" )
 		{
 			// the timer has expired, so lets remove the counter and stop the fan
