@@ -104,11 +104,6 @@ function onMessage( event )
 		humidityValue.innerHTML = parseFloat( tlm.humidAvg ).toFixed( 1 );
 		dsplyTime.innerHTML = tlm.time;
 
-		if( tlm.delayTime )
-			delayId.hidden = false;
-		else
-			delayId.hidden = true;
-
 		if( tlm.fanTime === 0 || typeof( tlm.fanTime ) == "undefined" )
 		{
 			// the timer has expired, so lets remove the counter and stop the fan
@@ -157,11 +152,23 @@ function onMessage( event )
 		if( tlm.currentMode == "1" )
 		{
 			modeColor = "cooling";
+
+			// show delay because there is a request for cooling
+			if( tlm.delayTime )
+				delayId.hidden = false;
+			else
+				delayId.hidden = true;
 		}
 		else
 		if( tlm.currentMode == "2" )
 		{
 			modeColor = "heating";
+
+			// show delay because there is a request for heating
+			if( tlm.delayTime )
+				delayId.hidden = false;
+			else
+				delayId.hidden = true;
 		}
 
 		// change the color for the current state
