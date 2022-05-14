@@ -8,6 +8,14 @@ var friday;
 var saturday;
 var sunday;
 
+var schedBox;
+var buttonHeat;
+var buttonCool;
+var buttonReturn;
+var buttonClose;
+var buttonDelete;
+var myDiv;
+
 // Add event for when the DOM is loaded
 // start the javascript from here
 document.addEventListener("DOMContentLoaded", function(event)
@@ -22,26 +30,59 @@ document.addEventListener("DOMContentLoaded", function(event)
 // make the scheduleBox clickable
 function initButtons()
 {
-	monday = document.getElementById( "monday" );		//.addEventListener( "click", editSched );
-	tuesday = document.getElementById( "tuesday" );	//	.addEventListener( "click", editSched );
-	wednesday = document.getElementById( "wednesday" );	//.addEventListener( "click", editSched );
-	thursday = document.getElementById( "thursday" );	//.addEventListener( "click", editSched );
-	friday = document.getElementById( "friday" );		//.addEventListener( "click", editSched );
-	saturday = document.getElementById( "saturday" );	//.addEventListener( "click", editSched );
-	sunday = document.getElementById( "sunday" );		//.addEventListener( "click", editSched );
+	monday = document.getElementById( "monday" );		
+	tuesday = document.getElementById( "tuesday" );
+	wednesday = document.getElementById( "wednesday" );	
+	thursday = document.getElementById( "thursday" );	
+	friday = document.getElementById( "friday" );		
+	saturday = document.getElementById( "saturday" );	
+	sunday = document.getElementById( "sunday" );		
+	
+	buttonHeat = document.getElementById( "buttonHeat" );
+	buttonCool = document.getElementById( "buttonCool" );
+	buttonDelete = document.getElementById( "buttonDelete" );
+	buttonReturn = document.getElementById( "buttonReturn" );
+	buttonClose = document.getElementById( "buttonClose" );
 
-	document.getElementById( "scheduleBox" ).addEventListener( "click", editSched );
+	schedBox = document.getElementById( "scheduleBox" );
+	schedBox.addEventListener( "click", editSched );
 
 	buttonHeat.addEventListener( 'click', addHeat );
 	buttonCool.addEventListener( 'click', addCool );
-	// buttonDelete.addEventListener( 'click', editSched );
+	buttonReturn.addEventListener( 'click', returnButton );
+	buttonClose.addEventListener( 'click', closeButton );
 }
 
-
-function editSched()
+// shrink the divs and go back to the week view
+function returnButton()
 {
+	schedBox.addEventListener( "click", editSched );
+	showDayDivs();
+
+	// make all the divs small again
+	myDiv.classList.remove( "dayBig" );
+	myDiv.classList.add( "daySmall" );
+
+	// hide the return button
+	buttonReturn.hidden = true;
+	
+	// show the close button
+	buttonClose.hidden = false;
+}
+
+// close the scheduler and go back to the thermostat view
+function closeButton()
+{
+	// close the div, or reload index....
+}
+
+function editSched( event )
+{
+	// remove this event for now
+	schedBox.removeEventListener( "click", editSched );
+
 	// find the day div if the hour target was clicked
-	var myDiv = event.target;
+	myDiv = event.target;
 	// console.log( myDiv.id );
 
 	if( myDiv.id.charAt( 3 ) == '-' )
@@ -54,6 +95,12 @@ function editSched()
 	// hide all the divs and then only show the one that was clicked
 	hideDayDivs();
 	myDiv.hidden = false;
+
+	// show the return button
+	buttonReturn.hidden = false;
+
+	// hide the close button
+	buttonClose.hidden = true;
 
 	// make this div large
 	myDiv.classList.add( "dayBig" );
@@ -71,6 +118,18 @@ function hideDayDivs(  )
 	saturday.hidden = true;
 	sunday.hidden = true;
 }
+
+function showDayDivs(  )
+{
+	monday.hidden = false;
+	tuesday.hidden = false;
+	wednesday.hidden = false;
+	thursday.hidden = false;
+	friday.hidden = false;
+	saturday.hidden = false;
+	sunday.hidden = false;
+}
+
 
 function addHeat()
 {

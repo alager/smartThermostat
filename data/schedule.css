@@ -1,53 +1,61 @@
 html {
-    color: #888;
-    display: table;
-    font-family: sans-serif;
-    height: 100%;
-    width: 100%;
+	color: #888;
+	display: table;
+	font-family: sans-serif;
+	height: 100%;
+	width: 100%;
 }
 
 .daySmall
 {
-    margin-top: 0.7em;
-    margin-bottom: 0.7em;
+	margin-top: 0.7em;
+	margin-bottom: 0.7em;
 }
 
 .dayBig
 {
-    margin-top: 7em;
-    margin-bottom: 7em;
+	margin-top: 7em;
+	margin-bottom: 7em;
 }
 
 .Hseparator
 {
-    border-bottom: 1px solid #888;
+	border-bottom: 1px solid #888;
 }
 
 .rightJustify
 {
-    display:flex;
-    justify-content:flex-end;
-    width:100%; padding:0;
+	display:inline-flex;
+	justify-content:flex-end; 
+	padding:0;
+}
+
+.leftJustify
+{
+	display: inline-flex;
+	justify-content:flex-start;
+	width:50%; 
+	padding:0;
 }
 
 .addRemove
 {
-    border-radius: 20px;
-    font-size: 20px;
+	border-radius: 20px;
+	font-size: 20px;
 }
 
 .dot
 {
-    height: 1.7em;
-    width: 1.7em;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-    vertical-align: middle;
-}
+	height: 1.7em;
+	width: 1.7em;
+	background-color: #bbb;
+	border-radius: 50%;
+	display: inline-block;
+	vertical-align: middle;
+	}
 
 .hourBox
 {
-    display: inline-block;
-    width: 1.7em;
+	display: inline-block;
+	width: 1.7em;
 }
