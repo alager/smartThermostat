@@ -239,10 +239,6 @@ void MyThermostat::runSlowTick( void )
 	// decrement or clear the run once flag, so the fan can be set to run again
 	decrementFanRunTime();
 
-	// if( getFanRunTime() == 0 )
-	// 	clearFanRunOnce();
-
-
 	// decrement and 
 	decrementCompressorOffTime();
 
@@ -490,12 +486,15 @@ void MyThermostat::turnOffAll( void )
 	digitalWrite( GPIO_OB, LOW );
 	digitalWrite( GPIO_COMPRESSOR, LOW );
 
+	if( currentMode != MODE_OFF )
+	{
+		// set the flag to prevent short cycling (only once)
+		setSafeToRunCompressor( false );
+		setCompressorOffTime( eepromData.compressorOffDelay );
+	}
+
 	// shadow the mode based on GPIO
 	currentMode = MODE_OFF;
-
-	// set the flag to prevent short cycling
-	setSafeToRunCompressor( false );
-	setCompressorOffTime( eepromData.compressorOffDelay );
 }
 
 
