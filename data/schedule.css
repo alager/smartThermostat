@@ -44,11 +44,21 @@ html {
 	font-size: 20px;
 }
 
-.dot
+.heatDot
 {
 	height: 1.7em;
 	width: 1.7em;
-	background-color: #bbb;
+	background-color: red;
+	border-radius: 50%;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.coolDot
+{
+	height: 1.7em;
+	width: 1.7em;
+	background-color: rgb(52, 140, 218);
 	border-radius: 50%;
 	display: inline-block;
 	vertical-align: middle;

@@ -22,7 +22,7 @@ typedef enum
 } __attribute__((packed)) mode_e;
 
 
-#define MAGIC_COOKIE	( 0xdebb1e04 )
+#define MAGIC_COOKIE	( 0xdebb1e05 )
 typedef struct 
 {
 	unsigned long	cookie;					// magic cookie for versioning

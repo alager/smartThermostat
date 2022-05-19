@@ -133,15 +133,22 @@ function showDayDivs(  )
 
 function addHeat()
 {
-	// var dotSpan = document.createElement('span');
-	var dotSpan = document.getElementById( 'mon-am-00' );
-	dotSpan.classList.add( "dot");
+	// the child node will be something like 'mon-am-00'
+	var newDiv = document.createElement("div");
+	newDiv.draggable = true;
 
-	// var dayDiv = document.getElementById( "monday" );
-	// dayDiv.appendChild( dotSpan );
+	myDiv.childNodes[1].appendChild(newDiv);
+	myDiv.childNodes[1].childNodes[0].classList.add( "heatDot");
+
 }
 
 function addCool()
 {
+	// the child node will be something like 'mon-am-00'
+	var newDiv = document.createElement("div");
+	newDiv.draggable = true;
 
+	// the child node will be something like 'mon-am-00'
+	myDiv.childNodes[1].appendChild(newDiv);
+	myDiv.childNodes[1].childNodes[0].classList.add( "coolDot");
 }
