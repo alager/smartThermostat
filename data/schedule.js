@@ -133,22 +133,56 @@ function showDayDivs(  )
 
 function addHeat()
 {
-	// the child node will be something like 'mon-am-00'
+	var dotType;
 	var newDiv = document.createElement("div");
 	newDiv.draggable = true;
 
+	if( myDiv.childNodes[1].childNodes.length > 1 )
+	{
+		return;
+	}
+	
+	if( myDiv.childNodes[1].childNodes.length > 0 )
+	{
+		dotType = "heatDotSmall";
+		myDiv.childNodes[1].childNodes[0].classList.remove( "coolDotNormal" );
+		myDiv.childNodes[1].childNodes[0].classList.add( "coolDotSmall" );
+	}
+	else
+	{
+		dotType = "heatDotNormal";
+	}
+	newDiv.classList.add( dotType );
+
 	myDiv.childNodes[1].appendChild(newDiv);
-	myDiv.childNodes[1].childNodes[0].classList.add( "heatDot");
+	// myDiv.childNodes[1].childNodes[0].classList.add( "heatDotNormal");
 
 }
 
 function addCool()
 {
-	// the child node will be something like 'mon-am-00'
+	var dotType;
 	var newDiv = document.createElement("div");
 	newDiv.draggable = true;
+	
+	if( myDiv.childNodes[1].childNodes.length > 1 )
+	{
+		return;
+	}
+
+	if( myDiv.childNodes[1].childNodes.length > 0 )
+	{
+		dotType = "coolDotSmall";
+		myDiv.childNodes[1].childNodes[0].classList.remove( "heatDotNormal" );
+		myDiv.childNodes[1].childNodes[0].classList.add( "heatDotSmall" );
+	}
+	else
+	{
+		dotType = "coolDotNormal";
+	}
+	newDiv.classList.add( dotType );
 
 	// the child node will be something like 'mon-am-00'
 	myDiv.childNodes[1].appendChild(newDiv);
-	myDiv.childNodes[1].childNodes[0].classList.add( "coolDot");
+	// myDiv.childNodes[1].childNodes[0].classList.add( "coolDotNormal");
 }
