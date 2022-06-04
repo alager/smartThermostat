@@ -298,40 +298,45 @@ void setup()
 	}
 
 	// Print ESP8266 Local IP Address
-	Serial.println(WiFi.localIP());
+	Serial << (WiFi.localIP()) << mendl;
 
 	Serial << "chip ID: 0x";
-	Serial.println( ESP.getChipId(), HEX);
+	Serial << ( ESP.getChipId(), HEX) << mendl;
 
+	String therm1 = "therm1";
+	String therm2 = "therm2";
+	String therm9 = "therm9";
 
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
-	{		
+	{
+		Serial << (F("MDNS started: " ));
+
 		// Start mDNS with name esp8266
 		if( 0x4864FE == ESP.getChipId() )
 		{
 			// Start mDNS with name esp8266
-			if( MDNS.begin( F("therm9") ) )
+			if( MDNS.begin( therm9 ) )
 			{ 
-				Serial << (F("MDNS started: therm9")) << mendl;
+				Serial << ( therm9 ) << mendl;
 			}
 		}
 		else
 		if( 0x4852E3 == ESP.getChipId() )
 		{
 			// Start mDNS with name esp8266
-			if( MDNS.begin( F("therm8") ) )
+			if( MDNS.begin( therm2 ) )
 			{ 
-				Serial << (F("MDNS started: therm8")) << mendl;
+				Serial << ( therm2 ) << mendl;
 			}
 		}
 		else
 		if( 0x48409D == ESP.getChipId() )
 		{
 			// Start mDNS with name esp8266
-			if( MDNS.begin( F("therm1") ) )
+			if( MDNS.begin( therm1 ) )
 			{ 
-				Serial << (F("MDNS started: therm1")) << mendl;
+				Serial << ( therm1 ) << mendl;
 			}
 		}
 
