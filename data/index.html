@@ -147,6 +147,9 @@ function onMessage( event )
 		if( tlm.currentMode == "0" )
 		{
 			modeColor = "off";
+
+			// hide the delay blinker because we aren't trying to turn the compressor on
+			delayId.hidden = true;
 		}
 		else
 		if( tlm.currentMode == "1" )
