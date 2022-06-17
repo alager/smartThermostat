@@ -356,7 +356,11 @@ void setup()
 		// Start Elegant OTA
 		AsyncElegantOTA.begin(&server);
 		// AsyncElegantOTA.begin(&server, "username", "password");
-		
+
+		// deal with CORS access
+		DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+		DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "content-type");
+
 		// Start server
 		server.begin();
 	}
