@@ -30,11 +30,19 @@ MyThermostat *someTherm;
 const char* ssid = "NestRouter1";
 const char* password = "This_isapassword9";
 
+// MDNS names
+String therm1 = "therm1";
+String therm2 = "therm2";
+String therm9 = "therm9";
+
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
 // create a web socket object
 AsyncWebSocket webSock("/ws");
+
+bool wsConnected = false;
+u_int8_t webConnectedCount = 0;
 
 
 /////////////////////////////
@@ -52,7 +60,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
 	std::string replyStr;
 
-	Serial.println( F( "Got Data from WebSocket" ));
+	Serial << ( F( "Got Data from WebSocket" ));
 	data[len] = 0;
 	Serial.println( (char *)data );
 
@@ -157,12 +165,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				{
 					// we got an off command, so clear the fan timer
 					// then notify the UI to update the fan
-					Serial << "FAN: Off" << mendl;
+					Serial << F( "FAN: Off" ) << mendl;
 
 					// turn off the fan in a safe way in case heat/cooling is running
 					someTherm->turnOffFan();
 
-					Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
+					Serial << F( "fanTime: " ) << someTherm->getFanRunTime() << mendl;
 
 					
 					// put it into a buffer to send to the clients
@@ -176,7 +184,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 				bool add15minutes = fan[ "add15minutes" ];
 				// serializeJsonPretty( add15minutes, Serial );
-				Serial << "add15minutes: " << add15minutes << mendl;
+				// Serial << "add15minutes: " << add15minutes << mendl;
 
 				if( add15minutes )
 				{
@@ -190,7 +198,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 						someTherm->turnOnFan();
 						someTherm->setFanRunTime( (60 * 15) + someTherm->getFanRunTime() );
 
-						Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
+						// Serial << "fanTime: " << someTherm->getFanRunTime() << mendl;
 
 						// put it into a buffer to send to the clients
 						serializeJson( json, JSONRetStr );
@@ -226,7 +234,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				// myTZ.setLocation( F("America/Chicago") );
 				// waitForSync();
 
-				Serial << F("Setting new time zone DONE") << mendl;
+				// Serial << F("Setting new time zone DONE") << mendl;
 				return;
 			 }
 		}
@@ -240,10 +248,20 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 	{
 	case WS_EVT_CONNECT:
 		Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+		
+		if( MAC_OUTSIDE == ESP.getChipId() )
+		{
+			wsConnected = true;
+		}
+
 		sendTelemetry();
 		break;
 	case WS_EVT_DISCONNECT:
 		Serial.printf("WebSocket client #%u disconnected\n", client->id());
+		if( MAC_OUTSIDE == ESP.getChipId() )
+		{
+			wsConnected = false;
+		}
 		break;
 	case WS_EVT_DATA:
 		handleWebSocketMessage(arg, data, len);
@@ -269,7 +287,7 @@ void setup()
 	// MyThermostat someThermObj;
 	someTherm = new MyThermostat;
 
-	// someTherm = &someThermObj;
+	// init the object for first run
 	someTherm->init();
 
 	// debug, set the mode to cooling
@@ -285,64 +303,14 @@ void setup()
 	}
 
 	// Connect to Wi-Fi
-	WiFi.begin(ssid, password);
-	#ifdef _DEBUG_
-	  Serial << (F("Connecting to WiFi")) << mendl;
-	#endif
-	while (WiFi.status() != WL_CONNECTED)
-	{
-		delay(1000);
-		#ifdef _DEBUG_
-		  Serial.println(".");
-		#endif
-	}
-
-	// Print ESP8266 Local IP Address
-	Serial << (WiFi.localIP()) << mendl;
-
-	Serial << "chip ID: 0x";
-	Serial << ( ESP.getChipId(), HEX) << mendl;
-
-	String therm1 = "therm1";
-	String therm2 = "therm2";
-	String therm9 = "therm9";
+	startWiFi();
 
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
 	{
-		Serial << (F("MDNS started: " ));
-
-		// Start mDNS with name esp8266
-		if( 0x4864FE == ESP.getChipId() )
-		{
-			// Start mDNS with name esp8266
-			if( MDNS.begin( therm9 ) )
-			{ 
-				Serial << ( therm9 ) << mendl;
-			}
-		}
-		else
-		if( 0x4852E3 == ESP.getChipId() )
-		{
-			// Start mDNS with name esp8266
-			if( MDNS.begin( therm2 ) )
-			{ 
-				Serial << ( therm2 ) << mendl;
-			}
-		}
-		else
-		if( 0x48409D == ESP.getChipId() )
-		{
-			// Start mDNS with name esp8266
-			if( MDNS.begin( therm1 ) )
-			{ 
-				Serial << ( therm1 ) << mendl;
-			}
-		}
-
-		// add this for mDNS to respond
-		MDNS.addService("http", "TCP", 80);	
-
+		// start MDNS
+		startMDNS();
+		
 		// after the network is up, we can init the scheduler
 		// it needs networking for NTP first
 		someTherm->sched_init();
@@ -367,12 +335,78 @@ void setup()
 	else
 	{
 		Serial << ( F( "WiFi Failed to connect" )) << mendl;
-		
 	}
 
 
 }
- 
+
+
+// configure and connect to the local wifi
+void startWiFi( void )
+{
+	WiFi.begin(ssid, password);
+	#ifdef _DEBUG_
+	  Serial << (F("Connecting to WiFi")) << mendl;
+	#endif
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(1000);
+		#ifdef _DEBUG_
+		  Serial << ( F(".") );
+		#endif
+	}
+	Serial << mendl;
+
+	// Print ESP8266 Local IP Address
+	Serial << (WiFi.localIP()) << mendl;
+
+	Serial << "chip ID: 0x";
+	Serial << ( ESP.getChipId(), HEX) << mendl;
+}
+
+
+
+void startMDNS( void )
+{
+	if( MAC_OUTSIDE == ESP.getChipId() )
+	{
+		// Start mDNS with name esp8266
+		if( MDNS.begin( therm9 ) )
+		{ 
+			Serial << ( therm9 ) << mendl;
+		}
+	}
+	else
+	if( MAC_UPSTAIRS == ESP.getChipId() )
+	{
+		// Start mDNS with name esp8266
+		if( MDNS.begin( therm2 ) )
+		{ 
+			Serial << ( therm2 ) << mendl;
+		}
+	}
+	else
+	if( MAC_DOWNSTAIRS == ESP.getChipId() )
+	{
+		// Start mDNS with name esp8266
+		if( MDNS.begin( therm1 ) )
+		{ 
+			Serial << ( therm1 ) << mendl;
+		}
+	}
+
+	// add this for mDNS to respond
+	MDNS.addService("http", "TCP", 80);
+	Serial << (F("MDNS started: " ));
+}
+
+
+void wakeupCB( void )
+{
+	Serial << F( "wake up" ) << mendl;
+	Serial.flush();
+}
+
 void loop()
 {	
 	unsigned long currentMillis = millis();
@@ -394,9 +428,58 @@ void loop()
 		// this will poll pool.ntp.org about every 30 minutes
 		someTherm->loopTick();
 		
-		// thermostat logic
+		if( MAC_OUTSIDE == ESP.getChipId() )
+		{
+			// if no web socket, then just return.  Stay awake to ease getting a connection
+			if( wsConnected == false )
+			{
+				Serial << F( "NO websocket yet" ) << mendl;
+				return;
+			}
+			// delay sleeping if the local webpage was loaded
+			if( webConnectedCount )
+			{
+				Serial << F( "web page loaded: " ) << webConnectedCount << mendl;
+				webConnectedCount--;
+				return;
+			}
+
+			Serial << F( "Going to SLEEP" ) << mendl;
+			Serial.flush();
+			// this device only reports temperature, so we sleep a bunch instead
+			// this also reduces internal cabinet temperature
+			//wifi_station_disconnect(); //not needed
+			
+			// for timer-based light sleep to work, the os timers need to be disconnected
+			extern os_timer_t *timer_list;
+			timer_list = nullptr;
+
+			uint32_t sleep_time_in_ms = 20 * 1000;
+			wifi_set_opmode( NULL_MODE );
+			wifi_fpm_set_sleep_type( LIGHT_SLEEP_T );
+			wifi_fpm_open();
+			wifi_fpm_set_wakeup_cb( wakeupCB );	// mandatory callback function
+
+			delay( 10 );
+			// fpm sleep time in micro seconds
+			wifi_fpm_do_sleep( sleep_time_in_ms * 1000 );
+
+			// we must call delay for the actual LIGHT_SLEEP to happen
+			// timed light sleep is only entered when the sleep command is
+			// followed by a delay() that is at least 1ms longer than the sleep
+			delay( sleep_time_in_ms + 10 );
+
+			// start the wifi again
+			startWiFi();
+
+			// prevent sleep mode from happening until next time
+			wifi_set_sleep_type(NONE_SLEEP_T);
+			delay( 1 );
+		}
+		else
 		if( someTherm->isMode( MODE_COOLING ) )
 		{
+			// thermostat logic
 			if( someTherm->getTemperature_f() > ( someTherm->getTemperatureSetting() + someTherm->getTempHysteresis() ) )
 			{
 				// turn on the cooler (if we can)
@@ -472,6 +555,11 @@ void configureRoutes( void )
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
 		request->send( LittleFS, F("/index.html"), F("text/html") );
+		
+		if( MAC_OUTSIDE == ESP.getChipId() )
+		{
+			webConnectedCount = 6; // 10s counts till we can sleep again 
+		}
 	});
 
 	// Route to load style.css file
