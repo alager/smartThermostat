@@ -230,6 +230,7 @@ void MyThermostat::updateMeasurements( void )
 	bme.takeForcedMeasurement();
 	getTemperature_f();
 	getHumidity_f();
+	getPressure_f();
 }
 
 
