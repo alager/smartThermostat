@@ -260,7 +260,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 		Serial.printf("WebSocket client #%u disconnected\n", client->id());
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
-			wsConnected = false;
+			// wsConnected = false;
 		}
 		break;
 	case WS_EVT_DATA:
@@ -357,11 +357,14 @@ void startWiFi( void )
 	}
 	Serial << mendl;
 
+	// we want it to use the same wifi again
+	WiFi.persistent( true );
+
 	// Print ESP8266 Local IP Address
 	Serial << (WiFi.localIP()) << mendl;
 
 	Serial << "chip ID: 0x";
-	Serial << ( ESP.getChipId(), HEX) << mendl;
+	Serial.println( ESP.getChipId(), HEX); // this won't print correctly using the stdout notation
 }
 
 
@@ -401,9 +404,10 @@ void startMDNS( void )
 }
 
 
+// mandatory call back function for using the sleep API
 void wakeupCB( void )
 {
-	Serial << F( "wake up" ) << mendl;
+	Serial << F( "wake up call back" ) << mendl;
 	Serial.flush();
 }
 
@@ -430,12 +434,15 @@ void loop()
 		
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
+			// *** this is the outside device ***
 			// if no web socket, then just return.  Stay awake to ease getting a connection
 			if( wsConnected == false )
 			{
 				Serial << F( "NO websocket yet" ) << mendl;
 				return;
 			}
+			wsConnected = false;
+
 			// delay sleeping if the local webpage was loaded
 			if( webConnectedCount )
 			{
@@ -454,12 +461,13 @@ void loop()
 			extern os_timer_t *timer_list;
 			timer_list = nullptr;
 
-			uint32_t sleep_time_in_ms = 20 * 1000;
+			uint32_t sleep_time_in_ms = 48 * 1000;
 			wifi_set_opmode( NULL_MODE );
 			wifi_fpm_set_sleep_type( LIGHT_SLEEP_T );
 			wifi_fpm_open();
 			wifi_fpm_set_wakeup_cb( wakeupCB );	// mandatory callback function
 
+			/////////////// SLEEP BEGIN ///////////////
 			delay( 10 );
 			// fpm sleep time in micro seconds
 			wifi_fpm_do_sleep( sleep_time_in_ms * 1000 );
@@ -468,7 +476,9 @@ void loop()
 			// timed light sleep is only entered when the sleep command is
 			// followed by a delay() that is at least 1ms longer than the sleep
 			delay( sleep_time_in_ms + 10 );
+			/////////////// SLEEP END ///////////////
 
+			// we are awake again
 			// start the wifi again
 			startWiFi();
 
