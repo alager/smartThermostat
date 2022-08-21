@@ -132,13 +132,18 @@ std::string MyThermostat::getTemperature()
 float MyThermostat::getPressure_f()
 {
 	float pressure;
+	static float outputPressure;
+	static float a = 16.0f;
 
 	// read the temperature sensor and convert to in-Hg
 	pressure = bme.readPressure() / 3386.3886666667f;
 
+	// low pass filter
+	outputPressure += ( pressure - outputPressure ) / a;
+	
 	// Serial.print("Pressure:	");
 	// Serial.println( pressure );
-	return pressure;
+	return outputPressure;
 }
 
 
