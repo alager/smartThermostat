@@ -17,6 +17,8 @@ const uint32_t interval = 10000;
 #define MAC_UPSTAIRS	( 0x4852E3 )
 #define MAC_DOWNSTAIRS	( 0x48409D )
 
+#define SLEEP_TIME		( 60 )
+
 
 // main.cpp prototypes
 void sendTelemetry( void );
@@ -28,6 +30,20 @@ void configureRoutes( void );
 void startWiFi( void );
 void startMDNS( void );
 void wakeupCB( void );
+void startSleep( uint32_t sleep_time );
+
+// websocket server
+void initWebSocket();
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
+void notifyClients( std::string data );
+
+
+// websocket client
+void makeWSConnection( void );
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length);
+
+
 
 
 #endif

@@ -17,6 +17,7 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoJson.h>
 #include <Streaming.h>
+#include <WebSocketsClient.h>
 
 #include "myThermostat.h"
 
@@ -41,13 +42,15 @@ AsyncWebServer server(80);
 // create a web socket object
 AsyncWebSocket webSock("/ws");
 
-bool wsConnected = false;
-u_int8_t webConnectedCount = 0;
+
+// for the websocket client
+WebSocketsClient webSocketClient;
 
 
 /////////////////////////////
 // code start
 
+// websocket server
 void notifyClients( std::string data )
 {
 	webSock.textAll( (char *)data.c_str() );
@@ -241,6 +244,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 	}
 }
 
+// websocket server events
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
 			 void *arg, uint8_t *data, size_t len)
 {
@@ -251,7 +255,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 		
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
-			wsConnected = true;
+			// wsConnected = true;
 		}
 
 		sendTelemetry();
@@ -272,12 +276,57 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 	}
 }
 
+// websocket server
 void initWebSocket()
 {
-	webSock.onEvent(onEvent);
+	// add a function pointer for the "on" event handler
+	webSock.onEvent( onEvent );
 	server.addHandler(&webSock);
 }
 
+// init to true for first time through the loop
+bool connected = true;
+uint16_t discoCount = 0;
+#define DEBUG_SERIAL ( Serial )
+// websocket client events
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
+{
+    switch(type) {
+        case WStype_DISCONNECTED:
+            DEBUG_SERIAL.printf("[WSc] Disconnected!\n");
+            connected = false;
+			discoCount++;
+            break;
+        case WStype_CONNECTED: {
+            DEBUG_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
+            connected = true;
+ 			discoCount = 0;
+            // send message to server when Connected
+            // DEBUG_SERIAL.println("[WSc] SENT: Connected");
+            // webSocketClient.sendTXT("Connected");
+        }
+            break;
+        case WStype_TEXT:
+            DEBUG_SERIAL.printf("[WSc] RESPONSE: %s\n", payload);
+            break;
+        case WStype_BIN:
+            DEBUG_SERIAL.printf("[WSc] get binary length: %u\n", length);
+            hexdump(payload, length);
+            break;
+                case WStype_PING:
+                        // pong will be send automatically
+                        DEBUG_SERIAL.printf("[WSc] get ping\n");
+                        break;
+                case WStype_PONG:
+                        // answer to a ping we send
+                        DEBUG_SERIAL.printf("[WSc] get pong\n");
+                        break;
+
+		default:
+			break;
+    }
+ 
+}
 
 void setup()
 {
@@ -308,12 +357,16 @@ void setup()
 	// Now that WiFi is connected start mDNS
 	if( WiFi.status() == WL_CONNECTED ) 
 	{
-		// start MDNS
-		startMDNS();
+		if( MAC_OUTSIDE != ESP.getChipId() )
+		{
+			// start MDNS if not the outside therm
+			startMDNS();
+		}
 		
 		// after the network is up, we can init the scheduler
 		// it needs networking for NTP first
 		someTherm->sched_init();
+		
 
 		// configure web server routes
 		configureRoutes();
@@ -329,15 +382,13 @@ void setup()
 		DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 		DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "content-type");
 
-		// Start server
+		// Start web server
 		server.begin();
 	}
 	else
 	{
 		Serial << ( F( "WiFi Failed to connect" )) << mendl;
 	}
-
-
 }
 
 
@@ -352,16 +403,21 @@ void startWiFi( void )
 	{
 		delay(1000);
 		#ifdef _DEBUG_
-		  Serial << ( F(".") );
+		//   Serial << ( F(".") );
+		Serial << WiFi.status();
 		#endif
 	}
 	Serial << mendl;
 
-	// we want it to use the same wifi again
-	WiFi.persistent( true );
-
 	// Print ESP8266 Local IP Address
 	Serial << (WiFi.localIP()) << mendl;
+	
+	if( MAC_OUTSIDE != ESP.getChipId() )
+	{
+		// we want it to use the same wifi again
+		WiFi.setAutoReconnect(true);
+		WiFi.persistent( true );
+	}
 
 	Serial << "chip ID: 0x";
 	Serial.println( ESP.getChipId(), HEX); // this won't print correctly using the stdout notation
@@ -411,6 +467,53 @@ void wakeupCB( void )
 	Serial.flush();
 }
 
+// put the device to sleep
+// sleep_time is how long to sleep in seconds
+void startSleep( uint32_t sleep_time )
+{
+	Serial << F( "Going to SLEEP" ) << mendl;
+	Serial.flush();
+
+	// convert from seconds to milliseconds
+	sleep_time *= 1000;
+
+	// this device only reports temperature, so we sleep a bunch instead
+	// this also reduces internal cabinet temperature
+	//wifi_station_disconnect(); //not needed
+	
+	// for timer-based light sleep to work, the os timers need to be disconnected
+	extern os_timer_t *timer_list;
+	timer_list = nullptr;
+
+	wifi_set_opmode( NULL_MODE );
+	wifi_fpm_set_sleep_type( LIGHT_SLEEP_T );
+	wifi_fpm_open();
+	wifi_fpm_set_wakeup_cb( wakeupCB );	// mandatory callback function
+
+	/////////////// SLEEP BEGIN ///////////////
+	delay( 10 );
+	// fpm sleep time in micro seconds
+	wifi_fpm_do_sleep( sleep_time * 1000 );
+
+	// we must call delay for the actual LIGHT_SLEEP to happen
+	// timed light sleep is only entered when the sleep command is
+	// followed by a delay() that is at least 1ms longer than the sleep
+	delay( sleep_time + 10 );
+	/////////////// SLEEP END ///////////////
+}
+
+// websocket client
+void makeWSConnection( void )
+{
+	Serial << "ws client opening connection" << mendl;
+	// server address, port and URL
+    webSocketClient.begin("therm.home", 3000, "/ws");
+ 
+    // event handler
+    webSocketClient.onEvent(webSocketEvent);
+}
+
+
 void loop()
 {	
 	unsigned long currentMillis = millis();
@@ -431,60 +534,41 @@ void loop()
 		// run the ezTime task
 		// this will poll pool.ntp.org about every 30 minutes
 		someTherm->loopTick();
+
+		
 		
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
 			// *** this is the outside device ***
-			// if no web socket, then just return.  Stay awake to ease getting a connection
-			if( wsConnected == false )
+			// 1	Go to sleep
+			// 2	wake up
+			// 3	get on wifi
+			// 4	make websocket connection to ws://therm.home:3000/ws
+			// 5	send telemetry
+			// 6	goto 1
+
+
+			if( connected || discoCount > 10 )
 			{
-				Serial << F( "NO websocket yet" ) << mendl;
-				return;
+				discoCount = 0;
+				//close websocket client
+				Serial << "ws client closing connection" << mendl;
+				webSocketClient.disconnect();
+
+				// This will put the device to sleep
+				// execution will continue from here when it wakes up
+				startSleep( SLEEP_TIME );
+
+				// we are awake again
+				// start the wifi again
+				startWiFi();
+
+				// prevent sleep mode from happening until next time
+				wifi_set_sleep_type(NONE_SLEEP_T);
+				delay( 1 );
+
+				makeWSConnection();
 			}
-			wsConnected = false;
-
-			// delay sleeping if the local webpage was loaded
-			if( webConnectedCount )
-			{
-				Serial << F( "web page loaded: " ) << webConnectedCount << mendl;
-				webConnectedCount--;
-				return;
-			}
-
-			Serial << F( "Going to SLEEP" ) << mendl;
-			Serial.flush();
-			// this device only reports temperature, so we sleep a bunch instead
-			// this also reduces internal cabinet temperature
-			//wifi_station_disconnect(); //not needed
-			
-			// for timer-based light sleep to work, the os timers need to be disconnected
-			extern os_timer_t *timer_list;
-			timer_list = nullptr;
-
-			uint32_t sleep_time_in_ms = 48 * 1000;
-			wifi_set_opmode( NULL_MODE );
-			wifi_fpm_set_sleep_type( LIGHT_SLEEP_T );
-			wifi_fpm_open();
-			wifi_fpm_set_wakeup_cb( wakeupCB );	// mandatory callback function
-
-			/////////////// SLEEP BEGIN ///////////////
-			delay( 10 );
-			// fpm sleep time in micro seconds
-			wifi_fpm_do_sleep( sleep_time_in_ms * 1000 );
-
-			// we must call delay for the actual LIGHT_SLEEP to happen
-			// timed light sleep is only entered when the sleep command is
-			// followed by a delay() that is at least 1ms longer than the sleep
-			delay( sleep_time_in_ms + 10 );
-			/////////////// SLEEP END ///////////////
-
-			// we are awake again
-			// start the wifi again
-			startWiFi();
-
-			// prevent sleep mode from happening until next time
-			wifi_set_sleep_type(NONE_SLEEP_T);
-			delay( 1 );
 		}
 		else
 		if( someTherm->isMode( MODE_COOLING ) )
@@ -554,8 +638,12 @@ void loop()
 
 	} // end of 10s loop
 
-	// run the mDNS processor loop
-	MDNS.update();
+	if( MAC_OUTSIDE != ESP.getChipId() )
+		// run the mDNS processor loop if not the outside therm
+		MDNS.update();
+
+	if( MAC_OUTSIDE == ESP.getChipId() )
+		webSocketClient.loop();
 }
 
 
@@ -565,11 +653,6 @@ void configureRoutes( void )
 	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
 	{
 		request->send( LittleFS, F("/index.html"), F("text/html") );
-		
-		if( MAC_OUTSIDE == ESP.getChipId() )
-		{
-			webConnectedCount = 6; // 10s counts till we can sleep again 
-		}
 	});
 
 	// Route to load style.css file
@@ -642,8 +725,18 @@ void sendTelemetry( void )
 	// put it into a buffer to send to the clients
 	serializeJson( doc, telemetryStr );
 
-	// send it to the clients
-	notifyClients( telemetryStr );
+	if( MAC_OUTSIDE == ESP.getChipId() )
+	{
+		Serial << "Sending WS data to server" << mendl;
+		// send it to the server
+		webSocketClient.sendTXT( telemetryStr.c_str() );	
+	}
+	else
+	{
+		// send it to the clients
+		notifyClients( telemetryStr );
+	}
+
 }
 
 
