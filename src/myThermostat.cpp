@@ -134,9 +134,17 @@ float MyThermostat::getPressure_f()
 	float pressure;
 	static float outputPressure;
 	static float a = 16.0f;
+	static bool firstRun = true;
 
 	// read the temperature sensor and convert to in-Hg
 	pressure = bme.readPressure() / 3386.3886666667f;
+
+	// // pre-load the array on the first run
+	if( firstRun )
+	{
+		outputPressure = pressure;
+		firstRun = false;
+	}
 
 	// low pass filter
 	outputPressure += ( pressure - outputPressure ) / a;
