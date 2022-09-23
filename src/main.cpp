@@ -2,7 +2,8 @@
   Rui Santos
   Complete project details at https://randomnerdtutorials.com/esp8266-dht11dht22-temperature-and-humidity-web-server-with-arduino-ide/
 *********/
-
+#define DEBUG_ESP_WIFI
+#define DEBUG_ESP_PORT
 // Import required libraries
 #include <Arduino.h>
 #include <ESP8266WifiMulti.h>
@@ -46,6 +47,7 @@ AsyncWebSocket webSock("/ws");
 // for the websocket client
 WebSocketsClient webSocketClient;
 
+ESP8266WiFiMulti wifiMulti;
 
 /////////////////////////////
 // code start
@@ -355,7 +357,7 @@ void setup()
 	startWiFi();
 
 	// Now that WiFi is connected start mDNS
-	if( WiFi.status() == WL_CONNECTED ) 
+	if( wifiMulti.run() == WL_CONNECTED )
 	{
 		if( MAC_OUTSIDE != ESP.getChipId() )
 		{
@@ -391,38 +393,39 @@ void setup()
 	}
 }
 
+// WiFi connect timeout per AP. Increase when connecting takes longer.
+const uint32_t connectTimeoutMs = 15000;
 
 // configure and connect to the local wifi
 void startWiFi( void )
 {
-	WiFi.begin(ssid, password);
-	#ifdef _DEBUG_
-	  Serial << (F("Connecting to WiFi")) << mendl;
-	#endif
-	while (WiFi.status() != WL_CONNECTED)
+	// Set in station mode
+ 	WiFi.mode( WIFI_STA );
+	
+	// Register multi WiFi networks
+	wifiMulti.addAP( ssid, password );
+
+	Serial << ( F("Connecting to WiFi 1") ) << mendl;
+	if( WL_CONNECTED == wifiMulti.run(connectTimeoutMs) )
 	{
-		delay(1000);
-		#ifdef _DEBUG_
-		//   Serial << ( F(".") );
-		Serial << WiFi.status();
-		#endif
+		Serial << ( F( "Connected") ) << mendl;
 	}
-	Serial << mendl;
+	else
+	{
+		Serial << ( F("Connecting to WiFi 2") ) << mendl;
+		while( wifiMulti.run() != WL_CONNECTED )
+		{
+			Serial << wifiMulti.run();
+		}
+		Serial << wifiMulti.run() << mendl;
+	}
 
 	// Print ESP8266 Local IP Address
-	Serial << (WiFi.localIP()) << mendl;
-	
-	if( MAC_OUTSIDE != ESP.getChipId() )
-	{
-		// we want it to use the same wifi again
-		WiFi.setAutoReconnect(true);
-		WiFi.persistent( true );
-	}
+	Serial << ( WiFi.localIP() ) << mendl;
 
 	Serial << "chip ID: 0x";
 	Serial.println( ESP.getChipId(), HEX); // this won't print correctly using the stdout notation
 }
-
 
 
 void startMDNS( void )
@@ -534,8 +537,6 @@ void loop()
 		// run the ezTime task
 		// this will poll pool.ntp.org about every 30 minutes
 		someTherm->loopTick();
-
-		
 		
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
@@ -546,7 +547,6 @@ void loop()
 			// 4	make websocket connection to ws://therm.home:3000/ws
 			// 5	send telemetry
 			// 6	goto 1
-
 
 			if( connected || discoCount > 10 )
 			{
@@ -637,6 +637,9 @@ void loop()
 		 webSock.cleanupClients();
 
 	} // end of 10s loop
+
+	// keep the wifi happy
+	wifiMulti.run();
 
 	if( MAC_OUTSIDE != ESP.getChipId() )
 		// run the mDNS processor loop if not the outside therm
