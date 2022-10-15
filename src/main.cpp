@@ -420,6 +420,10 @@ void startWiFi( void )
 		Serial << wifiMulti.run() << mendl;
 	}
 
+	// stay on the same wifi
+	WiFi.setAutoReconnect(true);
+	WiFi.persistent(true);
+
 	// Print ESP8266 Local IP Address
 	Serial << ( WiFi.localIP() ) << mendl;
 
@@ -537,6 +541,17 @@ void loop()
 		// run the ezTime task
 		// this will poll pool.ntp.org about every 30 minutes
 		someTherm->loopTick();
+
+		// check wifi status
+		if( (WiFi.status() != WL_CONNECTED) )
+		{
+				// it's been 10s and we haven't connected, so shut wifi down
+				// so we can start afresh
+				WiFi.disconnect();
+				
+				// start the wifi again
+				startWiFi();
+		}
 		
 		if( MAC_OUTSIDE == ESP.getChipId() )
 		{
@@ -554,6 +569,9 @@ void loop()
 				//close websocket client
 				Serial << "ws client closing connection" << mendl;
 				webSocketClient.disconnect();
+
+				// shut wifi down before going to sleep
+				WiFi.disconnect();
 
 				// This will put the device to sleep
 				// execution will continue from here when it wakes up
