@@ -482,6 +482,26 @@ bool MyThermostat::turnOnHeater( void )
 }
 
 
+// set the GPIO for the AUX heater to on
+// time is the number of seconds to run
+// if time is passed in, add it to the exiting time
+bool MyThermostat::turnOnAuxHeater( unsigned long time )
+{
+	// Always make sure the fan is on if AUX is on
+	turnOnFan();
+	digitalWrite( GPIO_EMGHEAT, HIGH );
+
+	return true;
+}
+
+
+// set the GPIO for the AUX heater to off
+void MyThermostat::turnOffAuxHeater( void )
+{
+	digitalWrite( GPIO_EMGHEAT, LOW );
+}
+
+
 // return the current run mode
 mode_e MyThermostat::currentState( void )
 {

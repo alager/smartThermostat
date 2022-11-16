@@ -159,8 +159,43 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 				return;
 			}
 
+			// serializeJsonPretty( json, Serial );
+
+			JsonObject auxClick = json[ "auxClick" ];
+			serializeJsonPretty( auxClick, Serial );
+			if( !auxClick.isNull() )
+			{
+				std::string JSONRetStr;
+
+				bool state = auxClick[ "state" ];
+
+				if( state == true )
+				{
+					// add 10 minutes to the aux heater
+					someTherm->turnOnAuxHeater( 60 * 10 );
+					Serial << "state: true" << mendl;
+				}
+				else
+				if( state == false )
+				{
+					someTherm->turnOffAuxHeater();
+					Serial << "state: false" << mendl;
+
+				}
+
+				bool add15minutes = auxClick[ "add15minutes" ];
+				Serial << "add15minutes: " << add15minutes << mendl;
+
+				// put it into a buffer to send to the clients
+				serializeJson( json, JSONRetStr );
+
+				// send it to the clients
+				notifyClients( JSONRetStr );
+				sendTelemetry();
+				return;
+			}
+
 			JsonObject fan = json["fanClick"];
-			
 			if( !fan.isNull() )
 			{
 				std::string JSONRetStr;

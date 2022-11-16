@@ -85,6 +85,9 @@ class MyThermostat
 		void turnOffHeater( void );
 		bool turnOnHeater( void );
 
+		bool turnOnAuxHeater( unsigned long time );
+		void turnOffAuxHeater( void );
+
 		mode_e currentState( void );
 		void turnOffAll( void );
 
