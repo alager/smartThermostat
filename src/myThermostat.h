@@ -4,6 +4,7 @@
 
 #include "Arduino.h"
 #include <string>
+#include <queue>
 #include <EEPROM.h>
 #include <Scheduler.h>
 
@@ -85,8 +86,15 @@ class MyThermostat
 		void turnOffHeater( void );
 		bool turnOnHeater( void );
 
-		bool turnOnAuxHeater( unsigned long time );
+		void setAuxRunTime( unsigned long );
+		unsigned long getAuxRunTime( void );
+		void decrementAuxRunTime( void );
+		bool turnOnAuxHeater( void );
 		void turnOffAuxHeater( void );
+		void calculateSlope( float temperature );
+		float getSlope( void );
+		void setOldSlope( void );
+		bool isNewSlope( void );
 
 		mode_e currentState( void );
 		void turnOffAll( void );
@@ -116,17 +124,21 @@ class MyThermostat
 
 		void sched_init( void );
 
-		Scheduler 		mySched;
+		Scheduler 			mySched;
 		
 	private:
-		mode_e 			currentMode;
-		unsigned long 	fanRunTime;
-		unsigned long	compressorOffTime;
+		mode_e 				currentMode;
+		unsigned long 		fanRunTime;
+		unsigned long		compressorOffTime;
 
-		bool 			fanRunOnce;
-		bool 			safeToRunCompressor;
+		bool 				fanRunOnce;				// used to let the fan run after the compressor turns off
+		bool 				safeToRunCompressor;
+		unsigned long		auxRunTime;
+		std::queue<float>	temperatureQue;
+		float				slope;
+		bool				newSlope;
 
-		myEEprom_t		eepromData;
+		myEEprom_t			eepromData;
 		
 
 		// create the bme object for I2C (SPI takes parameters)

@@ -32,6 +32,9 @@ MyThermostat *someTherm;
 const char* ssid = "NestRouter1";
 const char* password = "This_isapassword9";
 
+uint16_t underTempCounter;
+uint16_t slopeCounter;
+
 // MDNS names
 String therm1 = "therm1";
 String therm2 = "therm2";
@@ -162,7 +165,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 			// serializeJsonPretty( json, Serial );
 
 			JsonObject auxClick = json[ "auxClick" ];
-			serializeJsonPretty( auxClick, Serial );
+			// serializeJsonPretty( auxClick, Serial );
 			if( !auxClick.isNull() )
 			{
 				std::string JSONRetStr;
@@ -171,8 +174,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 
 				if( state == true )
 				{
-					// add 10 minutes to the aux heater
-					someTherm->turnOnAuxHeater( 60 * 10 );
+					// add 10 minutes to the aux heater and make sure it is on
+					someTherm->setAuxRunTime( 60 * 10 );
+					someTherm->turnOnAuxHeater();
 					Serial << "state: true" << mendl;
 				}
 				else
@@ -663,12 +667,58 @@ void loop()
 
 				// allow the extended fan run time happen again
 				someTherm->clearFanRunOnce();
+
+				// track how long we are under 3 degrees from the setting
+				// multiply by 100, round and then divide by 100 to get 2 decimal places
+				if( round( 100 * ( someTherm->getTemperatureSetting() - someTherm->getTemperature_f() )) / 100 >= 3.00f )
+				{
+					underTempCounter++;
+					Serial << "underTempCount: " << underTempCounter << mendl;
+					if( underTempCounter > 15 )
+					{
+						underTempCounter = 0;
+						someTherm->turnOnAuxHeater();
+						// turn on for 3 minutes
+						someTherm->setAuxRunTime( 60 * 3 );
+					}
+				}
+				else
+				if( someTherm->isNewSlope() )
+				{
+					someTherm->setOldSlope();
+					
+					// multiply by 100, round and then divide by 100 to get 2 decimal places
+					if( round( 100 *someTherm->getSlope() ) / 100 <= 0.01f )
+					{
+						Serial << "Slope <= 0.01" << mendl;
+						slopeCounter++;
+						Serial << "SlopeCounter: " << slopeCounter << mendl;
+						// check the slope
+						if( slopeCounter > 15 )
+						{
+							slopeCounter = 0;
+							someTherm->turnOnAuxHeater();
+							// turn on for 3 minutes
+							someTherm->setAuxRunTime( 60 * 3 );
+							Serial << "Aux on for slope: " << someTherm->getSlope() << mendl;
+						}
+					}
+					else
+					{
+						Serial << "Slope " << someTherm->getSlope() << " > 0.01" << mendl;
+						underTempCounter = 0;
+						slopeCounter = 0;
+						someTherm->turnOffAuxHeater();
+					}
+				}
 			}
 			else
 			if( someTherm->getTemperature_f() >= someTherm->getTemperatureSetting() + someTherm->getTempHysteresis() )
 			{
 				// turn off the heater, but run fan for a little longer
 				someTherm->turnOffHeater();
+				underTempCounter = 0;
+				slopeCounter = 0;
 				sendCurrentMode();
 				sendDelayStatus( false );
 			}
@@ -678,7 +728,6 @@ void loop()
 			// off
 			someTherm->turnOffAll();
 			sendDelayStatus( false );
-
 		}
 
 		// only check to update the eeprom once per loop
@@ -769,6 +818,7 @@ void sendTelemetry( void )
 	telemetry[ "presAvg" ] =		someTherm->getPressure_f();
 	telemetry[ "time" ] =			someTherm->timeZone_getTimeStr();
 	telemetry[ "delayTime" ] =		someTherm->getCompressorOffTime();
+	telemetry[ "auxTime" ] =		someTherm->getAuxRunTime();
 	
 	if( MODE_OFF == someTherm->currentState() )
 		telemetry[ "fanTime" ] =		someTherm->getFanRunTime();
