@@ -29,8 +29,8 @@
 MyThermostat *someTherm;
 
 // network credentials
-const char* ssid = "NestRouter1";
-const char* password = "This_isapassword9";
+const char* ssid = "ssid";
+const char* password = "xxxx";
 
 uint16_t underTempCounter;
 uint16_t slopeCounter;
